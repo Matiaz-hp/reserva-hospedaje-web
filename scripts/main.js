@@ -11,7 +11,27 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth
 const auth = getAuth();
 
 // ===============================
-// DOM
+// VARIABLES DOM
+// ===============================
+const fechaEntrada = document.getElementById("fecha-reserva");
+const fechaSalida = document.getElementById("fecha-salida");
+const searchBtn = document.getElementById("search-btn");
+const hotelesList = document.getElementById("hoteles-list");
+const reservasList = document.getElementById("reservas-list");
+
+const tabs = document.querySelectorAll(".tab");
+const searchSection = document.querySelector(".search-card");
+const hotelesSection = document.getElementById("hoteles");
+const reservasSection = document.getElementById("mis-reservas");
+
+const reservaModal = document.getElementById("reserva-modal");
+const confirmarBtn = document.getElementById("confirmar-reserva");
+const closeReserva = document.getElementById("close-reserva");
+
+let reservaActual = null;
+
+// ===============================
+// VALIDAR FECHAS
 // ===============================
 function validarFechas(entrada, salida) {
   const error = document.getElementById("error-fechas");
@@ -32,7 +52,9 @@ function validarFechas(entrada, salida) {
   return true;
 }
 
-
+// ===============================
+// DISPONIBILIDAD
+// ===============================
 async function hotelDisponible(hotelId, entrada, salida) {
   const q = query(
     collection(db, "reservas"),
@@ -51,55 +73,11 @@ async function hotelDisponible(hotelId, entrada, salida) {
       inicioReserva < new Date(salida) &&
       finReserva > new Date(entrada)
     ) {
-      return false; // hay cruce
+      return false;
     }
   }
-
   return true;
 }
-
-searchBtn.addEventListener("click", cargarHoteles);
-
-// ===============================
-// FECHAS
-// ===============================
-flatpickr("#fecha-reserva", { dateFormat: "Y-m-d" });
-flatpickr("#fecha-salida", { dateFormat: "Y-m-d" });
-
-// ===============================
-// TABS
-// ===============================
-tabs.forEach((tab, index) подтверждение => {
-  tab.addEventListener("click", () => {
-    tabs.forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
-
-    // Reservar
-    if (index === 0) {
-      searchSection.style.display = "block";
-      hotelesSection.style.display = "block";
-      reservasSection.style.display = "none";
-    }
-
-    // Mis Reservas
-    if (index === 1) {
-      searchSection.style.display = "none";
-      hotelesSection.style.display = "none";
-      reservasSection.style.display = "block";
-      cargarMisReservas();
-    }
-  });
-});
-
-
-fechaEntrada.addEventListener("change", () => {
-  document.getElementById("error-fechas").style.display = "none";
-});
-
-fechaSalida.addEventListener("change", () => {
-  document.getElementById("error-fechas").style.display = "none";
-});
-
 
 // ===============================
 // CARGAR HOTELES
@@ -107,9 +85,7 @@ fechaSalida.addEventListener("change", () => {
 async function cargarHoteles() {
   hotelesList.innerHTML = "";
 
-  if (!validarFechas(fechaEntrada.value, fechaSalida.value)) {
-    return;
-  }
+  if (!validarFechas(fechaEntrada.value, fechaSalida.value)) return;
 
   const snapshot = await getDocs(collection(db, "hoteles"));
 
@@ -169,13 +145,15 @@ async function cargarHoteles() {
 // CONFIRMAR RESERVA
 // ===============================
 confirmarBtn.addEventListener("click", async () => {
+  if (!reservaActual) return;
+
   await addDoc(collection(db, "reservas"), reservaActual);
   reservaModal.style.display = "none";
-  alert("✅ Reserva guardada");
+  alert("✅ Reserva guardada correctamente");
 });
 
 // ===============================
-// CARGAR MIS RESERVAS
+// MIS RESERVAS
 // ===============================
 async function cargarMisReservas() {
   reservasList.innerHTML = "";
@@ -211,11 +189,41 @@ async function cargarMisReservas() {
 }
 
 // ===============================
-// CERRAR MODAL
+// TABS
 // ===============================
+tabs.forEach((tab, index) => {
+  tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    if (index === 0) {
+      searchSection.style.display = "block";
+      hotelesSection.style.display = "block";
+      reservasSection.style.display = "none";
+    }
+
+    if (index === 1) {
+      searchSection.style.display = "none";
+      hotelesSection.style.display = "none";
+      reservasSection.style.display = "block";
+      cargarMisReservas();
+    }
+  });
+});
+
+// ===============================
+// EVENTOS
+// ===============================
+searchBtn.addEventListener("click", cargarHoteles);
+
 closeReserva.addEventListener("click", () => {
   reservaModal.style.display = "none";
 });
 
-// INICIO
-window.addEventListener("DOMContentLoaded", cargarHoteles);
+fechaEntrada.addEventListener("change", () => {
+  document.getElementById("error-fechas").style.display = "none";
+});
+
+fechaSalida.addEventListener("change", () => {
+  document.getElementById("error-fechas").style.display = "none";
+});
