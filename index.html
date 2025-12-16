@@ -6,16 +6,16 @@
   <title>Reservas de Hospedaje</title>
   <link rel="stylesheet" href="styles/styles.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
 </head>
 <body>
 
   <!-- Navbar -->
   <nav class="navbar">
     <div class="logo">Hospedaje</div>
-    <ul class="menu">
+    <div class="menu-toggle" id="menu-toggle">☰</div>
+    <ul class="menu" id="menu">
       <li><a href="#hoteles">Hoteles</a></li>
-      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#mapa">Mapa</a></li>
       <li><a href="#contacto">Contacto</a></li>
     </ul>
     <div class="auth">
@@ -28,13 +28,12 @@
 
   <!-- Banner Hero -->
   <section id="banner">
-    <div class="overlay"></div>
-    <div class="banner-content">
+    <div class="banner-text">
       <h1>Encuentra tu hospedaje ideal</h1>
       <p>Reserva hoteles, apartamentos y más en tu destino favorito</p>
-      <button id="ver-hoteles-btn">Ver Hoteles</button>
+      <button onclick="document.getElementById('hoteles').scrollIntoView({behavior:'smooth'})">Ver Hoteles</button>
     </div>
-    <!-- Buscador sobre el banner -->
+    <!-- Buscador encima del banner, izquierda -->
     <div id="buscador">
       <input type="text" id="search-input" placeholder="Buscar hotel por nombre">
       <input type="text" id="fecha-reserva" placeholder="Selecciona fecha">
@@ -43,16 +42,19 @@
   </section>
 
   <!-- Sección Hoteles -->
-  <section id="hoteles" class="hoteles-grid">
-    <!-- Cards se cargan dinámicamente desde main.js -->
+  <section id="hoteles">
+    <h2 class="section-title">Hoteles Disponibles</h2>
+    <div class="hoteles-grid" id="hoteles-list">
+      <!-- Cards dinámicas desde Firebase -->
+    </div>
   </section>
 
   <!-- Footer -->
   <footer>
-    &copy; 2025 Reservas de Hospedaje | Hecho con ❤️
+    &copy; 2025 Reservas de Hospedaje
   </footer>
 
-  <!-- Modales Login/Registro -->
+  <!-- Modales Login/Registro (No se tocan) -->
   <div id="login-modal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
@@ -85,5 +87,14 @@
   <script type="module" src="scripts/auth.js"></script>
   <script type="module" src="scripts/main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    // Menu toggle responsive
+    const menuToggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+    menuToggle.addEventListener('click', ()=>{ menu.classList.toggle('active'); });
+
+    // Inicializar calendario
+    flatpickr("#fecha-reserva",{dateFormat:"Y-m-d"});
+  </script>
 </body>
 </html>
