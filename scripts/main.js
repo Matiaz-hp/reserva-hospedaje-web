@@ -13,26 +13,6 @@ const auth = getAuth();
 // ===============================
 // DOM
 // ===============================
-const hotelesList = document.getElementById("hoteles-list");
-const reservasList = document.getElementById("reservas-list");
-
-const searchSection = document.querySelector(".search-card");
-const hotelesSection = document.getElementById("hoteles");
-const reservasSection = document.getElementById("mis-reservas");
-
-const tabs = document.querySelectorAll(".tab");
-
-const fechaEntrada = document.getElementById("fecha-reserva");
-const fechaSalida = document.getElementById("fecha-salida");
-
-// MODAL
-const reservaModal = document.getElementById("reserva-modal");
-const closeReserva = document.getElementById("close-reserva");
-const confirmarBtn = document.getElementById("confirmar-reserva");
-
-let reservaActual = null;
-
-
 function validarFechas(entrada, salida) {
   const error = document.getElementById("error-fechas");
 
@@ -83,6 +63,16 @@ tabs.forEach((tab, index) подтверждение => {
   });
 });
 
+
+fechaEntrada.addEventListener("change", () => {
+  document.getElementById("error-fechas").style.display = "none";
+});
+
+fechaSalida.addEventListener("change", () => {
+  document.getElementById("error-fechas").style.display = "none";
+});
+
+
 // ===============================
 // CARGAR HOTELES
 // ===============================
@@ -112,10 +102,9 @@ async function cargarHoteles() {
         return;
       }
 
-      if (!fechaEntrada.value || !fechaSalida.value) {
-        alert("Selecciona fechas");
-        return;
-      }
+if (!validarFechas(fechaEntrada.value, fechaSalida.value)) {
+  return;
+}
 
       reservaActual = {
         hotel: h.nombre,
