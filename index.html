@@ -93,11 +93,31 @@
     </div>
   </section>
 
-  <!-- PAGOS (placeholder futuro) -->
-  <section id="pagos" style="display:none;">
-    <h2 class="section-title">Pagos</h2>
-    <p style="text-align:center;">Sección de pagos en construcción.</p>
-  </section>
+<!-- PAGOS -->
+<section id="pagos" style="display:none;">
+  <h2 class="section-title">Pagos</h2>
+
+  <div class="search-card">
+    <h3>Pago de Reserva</h3>
+
+    <label>Número de tarjeta</label>
+    <input type="text" id="card-number" placeholder="4111 1111 1111 1111">
+
+    <label>Nombre del titular</label>
+    <input type="text" id="card-name" placeholder="JUAN PEREZ">
+
+    <label>Fecha expiración</label>
+    <input type="text" id="card-exp" placeholder="12/30">
+
+    <label>CVV</label>
+    <input type="text" id="card-cvv" placeholder="123">
+
+    <button id="pagar-btn">💳 Pagar Reserva</button>
+
+    <p id="pago-msg"></p>
+  </div>
+</section>
+
 
   <!-- FOOTER -->
   <footer>
