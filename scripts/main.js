@@ -32,6 +32,26 @@ const confirmarBtn = document.getElementById("confirmar-reserva");
 
 let reservaActual = null;
 
+
+function validarFechas(entrada, salida) {
+  const error = document.getElementById("error-fechas");
+
+  if (!entrada || !salida) {
+    error.textContent = "⚠️ Debes seleccionar fecha de entrada y salida.";
+    error.style.display = "block";
+    return false;
+  }
+
+  if (new Date(salida) <= new Date(entrada)) {
+    error.textContent = "⚠️ La fecha de salida debe ser mayor a la de entrada.";
+    error.style.display = "block";
+    return false;
+  }
+
+  error.style.display = "none";
+  return true;
+}
+
 // ===============================
 // FECHAS
 // ===============================
