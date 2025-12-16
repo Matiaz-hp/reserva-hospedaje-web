@@ -22,149 +22,125 @@
     </div>
   </header>
 
-  <!-- MENÚ TIPO TABS -->
+  <!-- MENÚ TABS -->
   <nav class="tabs">
-    <button class="tab active" data-tab="reservar">Reservar</button>
-    <button class="tab" data-tab="mis-reservas">Mis Reservas</button>
-    <button class="tab" data-tab="pagos">Pagos</button>
+    <button class="tab active">Reservar</button>
+    <button class="tab">Mis Reservas</button>
+    <button class="tab">Pagos</button>
+    <button class="tab" id="admin-tab">Admin</button>
   </nav>
 
-  <!-- BUSCADOR PRINCIPAL -->
-  <section class="search-card" id="reservar">
+  <!-- ========================= -->
+  <!-- LOGIN ADMINISTRADOR -->
+  <!-- ========================= -->
+  <section id="admin-login" class="search-card" style="display:none;">
+    <h2>🔐 Acceso Administrador</h2>
 
+    <form id="admin-login-form">
+      <label>Correo administrador</label>
+      <input type="email" id="admin-email" placeholder="admin@admin.com" required>
+
+      <label>Contraseña</label>
+      <input type="password" id="admin-password" placeholder="********" required>
+
+      <button type="submit">Ingresar</button>
+    </form>
+
+    <p id="login-error" style="color:red; display:none;">
+      ❌ Credenciales incorrectas
+    </p>
+  </section>
+
+  <!-- ========================= -->
+  <!-- PANEL ADMINISTRADOR -->
+  <!-- ========================= -->
+  <section id="admin-panel" style="display:none;">
+    <h2 class="section-title">🛠️ Panel Administrador</h2>
+
+    <div class="search-card">
+      <h3>Modificar precio de hotel</h3>
+
+      <label>Hotel</label>
+      <select id="hotel-select"></select>
+
+      <label>Nuevo precio por noche</label>
+      <input type="number" id="nuevo-precio" placeholder="Ej: 120">
+
+      <button id="guardar-precio-btn">💾 Guardar Cambios</button>
+    </div>
+  </section>
+
+  <!-- ========================= -->
+  <!-- BUSCADOR -->
+  <!-- ========================= -->
+  <section class="search-card">
     <h2>Buscar Habitaciones Disponibles</h2>
-    <p>Encuentra la habitación perfecta para tu estadía</p>
 
     <div class="search-grid">
-
       <div class="field">
         <label>Fecha de entrada</label>
-        <input type="text" id="fecha-reserva" placeholder="yyyy-mm-dd">
+        <input type="text" id="fecha-reserva">
       </div>
 
       <div class="field">
         <label>Fecha de salida</label>
-        <input type="text" id="fecha-salida" placeholder="yyyy-mm-dd">
+        <input type="text" id="fecha-salida">
       </div>
-
-      <div class="field">
-        <label>Tipo de habitación</label>
-        <select id="tipo-habitacion">
-          <option>Todas</option>
-          <option>Simple</option>
-          <option>Doble</option>
-          <option>Matrimonial</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Huéspedes</label>
-        <select id="huespedes">
-          <option>1 persona</option>
-          <option>2 personas</option>
-          <option>3 personas</option>
-          <option>4 personas</option>
-        </select>
-      </div>
-
     </div>
 
-    <p id="error-fechas" style="display:none;color:#c0392b;margin-top:10px;"></p>
-    
-    <button id="search-btn" class="search-btn">
-      🔍 Buscar Habitaciones
-    </button>
-
+    <p id="error-fechas" style="display:none;color:red;"></p>
+    <button id="search-btn">🔍 Buscar</button>
   </section>
 
   <!-- RESULTADOS -->
   <section id="hoteles">
     <h2 class="section-title">Habitaciones Disponibles</h2>
-    <div class="hoteles-grid" id="hoteles-list">
-      <!-- cards dinámicas -->
-    </div>
+    <div id="hoteles-list" class="hoteles-grid"></div>
   </section>
 
   <!-- MIS RESERVAS -->
   <section id="mis-reservas" style="display:none;">
     <h2 class="section-title">Mis Reservas</h2>
-    <div id="reservas-list" class="hoteles-grid">
-      <!-- cards de reservas -->
-    </div>
+    <div id="reservas-list" class="hoteles-grid"></div>
   </section>
 
-<!-- PAGOS -->
-<section id="pagos" style="display:none;">
-  <h2 class="section-title">Pagos</h2>
+  <!-- PAGOS -->
+  <section id="pagos" style="display:none;">
+    <h2 class="section-title">Pagos</h2>
 
-  <div class="search-card">
-    <h3>Pago de Reserva</h3>
+    <div class="search-card">
+      <label>Número de tarjeta</label>
+      <input type="text">
 
-    <label>Número de tarjeta</label>
-    <input type="text" id="card-number" placeholder="4111 1111 1111 1111">
+      <label>Nombre</label>
+      <input type="text">
 
-    <label>Nombre del titular</label>
-    <input type="text" id="card-name" placeholder="JUAN PEREZ">
+      <label>CVV</label>
+      <input type="text">
 
-    <label>Fecha expiración</label>
-    <input type="text" id="card-exp" placeholder="12/30">
-
-    <label>CVV</label>
-    <input type="text" id="card-cvv" placeholder="123">
-
-    <button id="pagar-btn">💳 Pagar Reserva</button>
-
-    <p id="pago-msg"></p>
-  </div>
-</section>
-
+      <button>💳 Pagar</button>
+    </div>
+  </section>
 
   <!-- FOOTER -->
   <footer>
     &copy; 2025 Sistema de Reservas Hotel
   </footer>
 
-  <!-- MODALES LOGIN / REGISTRO -->
-  <div id="login-modal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-      <h2>Iniciar Sesión</h2>
-      <form id="login-form">
-        <input type="email" id="login-email" placeholder="Correo" required>
-        <input type="password" id="login-password" placeholder="Contraseña" required>
-        <button type="submit">Iniciar Sesión</button>
-      </form>
-      <button id="google-login">Continuar con Google</button>
-    </div>
-  </div>
-
-  <div id="register-modal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="document.getElementById('register-modal').style.display='none'">&times;</span>
-      <h2>Registrarse</h2>
-      <form id="register-form">
-        <input type="text" id="register-name" placeholder="Nombre" required>
-        <input type="email" id="register-email" placeholder="Correo" required>
-        <input type="password" id="register-password" placeholder="Contraseña" required>
-        <button type="submit">Registrarse</button>
-      </form>
-      <button id="google-register">Continuar con Google</button>
-    </div>
-  </div>
-
-  <!-- MODAL RESERVA -->
+  <!-- ========================= -->
+  <!-- MODALES -->
+  <!-- ========================= -->
   <div id="reserva-modal" class="modal">
     <div class="modal-content">
-      <span class="close" id="close-reserva">&times;</span>
+      <span id="close-reserva" class="close">&times;</span>
 
       <h2>Confirmar Reserva</h2>
-
       <p><strong>Hotel:</strong> <span id="reserva-hotel"></span></p>
-      <p><strong>Precio por noche:</strong> $<span id="reserva-precio"></span></p>
+      <p><strong>Precio:</strong> $<span id="reserva-precio"></span></p>
       <p><strong>Entrada:</strong> <span id="reserva-entrada"></span></p>
       <p><strong>Salida:</strong> <span id="reserva-salida"></span></p>
 
-      <button id="confirmar-reserva">Confirmar Reserva</button>
+      <button id="confirmar-reserva">Confirmar</button>
     </div>
   </div>
 
@@ -175,9 +151,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script>
-    flatpickr("#fecha-reserva",{ dateFormat:"Y-m-d" });
-    flatpickr("#fecha-salida",{ dateFormat:"Y-m-d" });
+    flatpickr("#fecha-reserva",{dateFormat:"Y-m-d"});
+    flatpickr("#fecha-salida",{dateFormat:"Y-m-d"});
   </script>
 
 </body>
 </html>
+
+
+
