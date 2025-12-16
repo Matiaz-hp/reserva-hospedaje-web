@@ -20,6 +20,7 @@
     <div class="auth">
       <span id="user-name"></span>
       <button id="login-btn">Iniciar Sesión</button>
+      <button id="register-btn">Registrarse</button>
       <button id="logout-btn" style="display:none;">Cerrar Sesión</button>
     </div>
   </nav>
@@ -27,8 +28,8 @@
   <!-- Banner -->
   <section id="banner">
     <div class="banner-text">
-      <h1>Reserva tu hospedaje ideal</h1>
-      <button onclick="document.getElementById('register-modal').style.display='block'">Regístrate</button>
+      <h1>Encuentra tu hospedaje ideal</h1>
+      <p>Reserva en hoteles, apartamentos y más en tu destino favorito</p>
     </div>
   </section>
 
@@ -44,6 +45,7 @@
 
   <!-- Mapa -->
   <section id="mapa">
+    <h2>Ubicación de los Hoteles</h2>
     <div id="map" style="height:400px;"></div>
   </section>
 
@@ -76,6 +78,7 @@
         <input type="password" id="register-password" placeholder="Contraseña" required>
         <button type="submit">Registrarse</button>
       </form>
+      <button id="google-register">Continuar con Google</button>
     </div>
   </div>
 
@@ -87,3 +90,4 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </body>
 </html>
+
