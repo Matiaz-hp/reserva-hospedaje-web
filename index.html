@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservas de Hospedaje</title>
+  <link rel="stylesheet" href="styles/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">Hospedaje</div>
+    <ul class="menu">
+      <li><a href="#hoteles">Hoteles</a></li>
+      <li><a href="#mapa">Mapa</a></li>
+    </ul>
+    <div class="auth">
+      <span id="user-name"></span>
+      <button id="login-btn">Iniciar Sesión</button>
+      <button id="logout-btn" style="display:none;">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <!-- Banner -->
+  <section id="banner">
+    <div class="banner-text">
+      <h1>Reserva tu hospedaje ideal</h1>
+      <button onclick="document.getElementById('register-modal').style.display='block'">Regístrate</button>
+    </div>
+  </section>
+
+  <!-- Buscador -->
+  <section id="buscador">
+    <input type="text" id="search-input" placeholder="Buscar hotel por nombre">
+    <input type="text" id="fecha-reserva" placeholder="Selecciona fecha">
+    <button id="search-btn">Buscar</button>
+  </section>
+
+  <!-- Hoteles -->
+  <section id="hoteles" class="hoteles-grid" id="hoteles-list"></section>
+
+  <!-- Mapa -->
+  <section id="mapa">
+    <div id="map" style="height:400px;"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Reservas de Hospedaje
+  </footer>
+
+  <!-- Modales Login/Registro -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+      <h2>Iniciar Sesión</h2>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Correo" required>
+        <input type="password" id="login-password" placeholder="Contraseña" required>
+        <button type="submit">Iniciar Sesión</button>
+      </form>
+      <button id="google-login">Continuar con Google</button>
+    </div>
+  </div>
+
+  <div id="register-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="document.getElementById('register-modal').style.display='none'">&times;</span>
+      <h2>Registrarse</h2>
+      <form id="register-form">
+        <input type="text" id="register-name" placeholder="Nombre" required>
+        <input type="email" id="register-email" placeholder="Correo" required>
+        <input type="password" id="register-password" placeholder="Contraseña" required>
+        <button type="submit">Registrarse</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="scripts/firebase-config.js"></script>
+  <script type="module" src="scripts/auth.js"></script>
+  <script type="module" src="scripts/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</body>
+</html>
