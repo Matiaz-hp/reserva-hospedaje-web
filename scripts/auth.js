@@ -2,13 +2,21 @@ import { auth, db } from "./firebase-config.js";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendEmailVerification, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const logoutBtn = document.getElementById('logout-btn');
 const loginBtn = document.getElementById('login-btn');
+const registerBtn = document.getElementById('register-btn');
+const logoutBtn = document.getElementById('logout-btn');
 const userName = document.getElementById('user-name');
 const googleLogin = document.getElementById('google-login');
+const googleRegister = document.getElementById('google-register');
 
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+
+// Mostrar modales
+loginBtn?.addEventListener('click',()=>{document.getElementById('login-modal').style.display='block';});
+registerBtn?.addEventListener('click',()=>{document.getElementById('register-modal').style.display='block';});
+
+// Registro
 registerForm?.addEventListener('submit', async e=>{
   e.preventDefault();
   const name = document.getElementById('register-name').value;
@@ -25,6 +33,7 @@ registerForm?.addEventListener('submit', async e=>{
   }catch(err){alert(err.message);}
 });
 
+// Login
 loginForm?.addEventListener('submit', async e=>{
   e.preventDefault();
   const email = document.getElementById('login-email').value;
@@ -37,6 +46,7 @@ loginForm?.addEventListener('submit', async e=>{
   }catch(err){alert(err.message);}
 });
 
+// Google Login/Register
 googleLogin?.addEventListener('click', async ()=>{
   const provider = new GoogleAuthProvider();
   try{
@@ -47,9 +57,21 @@ googleLogin?.addEventListener('click', async ()=>{
   }catch(err){alert(err.message);}
 });
 
+googleRegister?.addEventListener('click', async ()=>{
+  const provider = new GoogleAuthProvider();
+  try{
+    const result = await signInWithPopup(auth,provider);
+    const user = result.user;
+    await setDoc(doc(db,'users',user.uid),{name:user.displayName,email:user.email,uid:user.uid},{merge:true});
+    document.getElementById('register-modal').style.display='none';
+  }catch(err){alert(err.message);}
+});
+
+// Logout
 logoutBtn?.addEventListener('click', async ()=>{await signOut(auth);});
 
+// Estado del usuario
 onAuthStateChanged(auth,user=>{
-  if(user){ userName.textContent = user.displayName || user.email; logoutBtn.style.display='inline-block'; loginBtn.style.display='none'; }
-  else{ userName.textContent=''; logoutBtn.style.display='none'; loginBtn.style.display='inline-block'; }
+  if(user){ userName.textContent = user.displayName || user.email; logoutBtn.style.display='inline-block'; loginBtn.style.display='none'; registerBtn.style.display='none'; }
+  else{ userName.textContent=''; logoutBtn.style.display='none'; loginBtn.style.display='inline-block'; registerBtn.style.display='inline-block'; }
 });
