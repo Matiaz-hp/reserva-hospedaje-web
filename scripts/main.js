@@ -7,15 +7,15 @@ const searchBtn = document.getElementById('search-btn');
 
 flatpickr("#fecha-reserva",{dateFormat:"Y-m-d"});
 
-const OPENWEATHER_API_KEY = "TU_API_KEY_OPENWEATHER"; // pon tu API key
-const UNSPLASH_ACCESS_KEY = "TU_API_KEY_UNSPLASH";   // pon tu API key
+const OPENWEATHER_API_KEY = "TU_API_KEY_OPENWEATHER";
+const UNSPLASH_ACCESS_KEY = "TU_API_KEY_UNSPLASH";
 
 async function fetchWeather(ciudad){
   try{
     const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&units=metric&appid=${OPENWEATHER_API_KEY}`);
     const data = await res.json();
     return data.main ? `${data.temp}°C, ${data.weather[0].main}` : '';
-  }catch(err){return'';}
+  }catch{return'';}
 }
 
 async function fetchUnsplash(ciudad){
@@ -23,11 +23,11 @@ async function fetchUnsplash(ciudad){
     const res = await fetch(`https://api.unsplash.com/search/photos?query=${ciudad} hotel&client_id=${UNSPLASH_ACCESS_KEY}`);
     const data = await res.json();
     return data.results[0]?.urls.small || 'assets/images/hotel1.jpg';
-  }catch(err){return 'assets/images/hotel1.jpg';}
+  }catch{return 'assets/images/hotel1.jpg';}
 }
 
 async function cargarHoteles(filtro=''){
-  hotelesGrid.innerHTML = '';
+  hotelesGrid.innerHTML='';
   const hotelesRef = collection(db,'hoteles');
   let q = hotelesRef;
   if(filtro){ q = query(hotelesRef, where("nombre",'==',filtro)); }
