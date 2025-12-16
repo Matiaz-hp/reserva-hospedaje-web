@@ -1,1 +1,94 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserva de Hospedaje</title>
+<link rel="stylesheet" href="styles/styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+
+<header>
+  <nav class="navbar">
+    <div class="logo">🏨 Reservas</div>
+    <ul class="menu">
+      <li><a href="#">Inicio</a></li>
+      <li><a href="#hoteles">Hoteles</a></li>
+      <li><a href="#mapa">Mapa</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <div class="auth">
+      <span id="user-name"></span>
+      <button id="login-btn" onclick="document.getElementById('login-modal').style.display='block'">Login / Registro</button>
+      <button id="logout-btn" style="display:none;">Cerrar sesión</button>
+    </div>
+  </nav>
+</header>
+
+<section id="banner">
+  <div class="banner-text">
+    <h1>Encuentra tu hotel ideal</h1>
+    <button id="btn-buscar">Buscar hoteles</button>
+  </div>
+</section>
+
+<section id="buscador">
+  <input type="text" id="search-input" placeholder="Buscar hotel o ciudad...">
+  <input type="text" id="fecha-reserva" placeholder="Selecciona fecha" readonly>
+  <button id="search-btn">Buscar</button>
+</section>
+
+<section id="hoteles">
+  <h2>Hoteles Disponibles</h2>
+  <div id="hoteles-list" class="hoteles-grid"></div>
+</section>
+
+<section id="mapa">
+  <h2>Mapa de Hoteles</h2>
+  <div id="map" style="height:400px;"></div>
+</section>
+
+<footer>
+  <p>© 2025 Reserva de Hospedaje - Todos los derechos reservados</p>
+</footer>
+
+<!-- Modal Login -->
+<div id="login-modal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+    <form id="login-form">
+      <h3>Iniciar Sesión</h3>
+      <input type="email" id="login-email" placeholder="Correo electrónico" required>
+      <input type="password" id="login-password" placeholder="Contraseña" required>
+      <button type="submit">Iniciar Sesión</button>
+      <button type="button" id="google-login">Login con Google</button>
+      <p>No tienes cuenta? <a href="#" onclick="document.getElementById('login-modal').style.display='none'; document.getElementById('register-modal').style.display='block'">Registrarse</a></p>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Registro -->
+<div id="register-modal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('register-modal').style.display='none'">&times;</span>
+    <form id="register-form">
+      <h3>Registrarse</h3>
+      <input type="text" id="register-name" placeholder="Nombre completo" required>
+      <input type="email" id="register-email" placeholder="Correo electrónico" required>
+      <input type="password" id="register-password" placeholder="Contraseña" required>
+      <button type="submit">Registrarse</button>
+      <p>Ya tienes cuenta? <a href="#" onclick="document.getElementById('register-modal').style.display='none'; document.getElementById('login-modal').style.display='block'">Iniciar Sesión</a></p>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="scripts/firebase-config.js"></script>
+<script type="module" src="scripts/auth.js"></script>
+<script type="module" src="scripts/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</body>
+</html>
