@@ -288,3 +288,7 @@ footer {
 .reserva-card button {
   background: #c0392b;
 }
+#error-fechas {
+  font-size: 14px;
+  font-weight: 500;
+}
