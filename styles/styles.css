@@ -284,3 +284,7 @@ footer {
     gap: 12px;
   }
 }
+
+.reserva-card button {
+  background: #c0392b;
+}
