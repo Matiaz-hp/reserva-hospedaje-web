@@ -8,6 +8,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
+import {
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+
 const auth = getAuth();
 
 // ===============================
@@ -170,6 +176,11 @@ async function cargarMisReservas() {
 
   const snapshot = await getDocs(q);
 
+  if (snapshot.empty) {
+    reservasList.innerHTML = "<p>No tienes reservas activas.</p>";
+    return;
+  }
+
   snapshot.forEach((docSnap) => {
     const r = docSnap.data();
 
@@ -181,8 +192,22 @@ async function cargarMisReservas() {
         <h3>${r.hotel}</h3>
         <p>📅 ${r.entrada} → ${r.salida}</p>
         <p>💲 ${r.precio} por noche</p>
+        <button class="cancel-btn">❌ Cancelar reserva</button>
       </div>
     `;
+
+    card.querySelector(".cancel-btn").addEventListener("click", async () => {
+      const confirmar = confirm(
+        "¿Estás seguro de cancelar esta reserva?"
+      );
+
+      if (!confirmar) return;
+
+      await deleteDoc(doc(db, "reservas", docSnap.id));
+
+      alert("✅ Reserva cancelada");
+      cargarMisReservas(); // refrescar lista
+    });
 
     reservasList.appendChild(card);
   });
