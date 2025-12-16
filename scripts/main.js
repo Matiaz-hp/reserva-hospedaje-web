@@ -32,6 +32,34 @@ function validarFechas(entrada, salida) {
   return true;
 }
 
+
+async function hotelDisponible(hotelId, entrada, salida) {
+  const q = query(
+    collection(db, "reservas"),
+    where("hotelId", "==", hotelId)
+  );
+
+  const snapshot = await getDocs(q);
+
+  for (const doc of snapshot.docs) {
+    const r = doc.data();
+
+    const inicioReserva = new Date(r.entrada);
+    const finReserva = new Date(r.salida);
+
+    if (
+      inicioReserva < new Date(salida) &&
+      finReserva > new Date(entrada)
+    ) {
+      return false; // hay cruce
+    }
+  }
+
+  return true;
+}
+
+searchBtn.addEventListener("click", cargarHoteles);
+
 // ===============================
 // FECHAS
 // ===============================
@@ -78,10 +106,23 @@ fechaSalida.addEventListener("change", () => {
 // ===============================
 async function cargarHoteles() {
   hotelesList.innerHTML = "";
+
+  if (!validarFechas(fechaEntrada.value, fechaSalida.value)) {
+    return;
+  }
+
   const snapshot = await getDocs(collection(db, "hoteles"));
 
-  snapshot.forEach((docSnap) => {
+  for (const docSnap of snapshot.docs) {
     const h = docSnap.data();
+
+    const disponible = await hotelDisponible(
+      docSnap.id,
+      fechaEntrada.value,
+      fechaSalida.value
+    );
+
+    if (!disponible) continue;
 
     const card = document.createElement("div");
     card.className = "hotel-card";
@@ -102,11 +143,8 @@ async function cargarHoteles() {
         return;
       }
 
-if (!validarFechas(fechaEntrada.value, fechaSalida.value)) {
-  return;
-}
-
       reservaActual = {
+        hotelId: docSnap.id,
         hotel: h.nombre,
         precio: h.precio,
         entrada: fechaEntrada.value,
@@ -124,7 +162,7 @@ if (!validarFechas(fechaEntrada.value, fechaSalida.value)) {
     });
 
     hotelesList.appendChild(card);
-  });
+  }
 }
 
 // ===============================
