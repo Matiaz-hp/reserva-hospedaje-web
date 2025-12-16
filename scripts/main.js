@@ -225,25 +225,36 @@ async function cargarMisReservas() {
 // ===============================
 // TABS
 // ===============================
+const pagosTabIndex = 2;
+const pagosSectionDom = document.getElementById("pagos");
+
 tabs.forEach((tab, index) => {
   tab.addEventListener("click", () => {
-    tabs.forEach((t) => t.classList.remove("active"));
+    tabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
+
+    searchSection.style.display = "none";
+    hotelesSection.style.display = "none";
+    reservasSection.style.display = "none";
+    pagosSectionDom.style.display = "none";
 
     if (index === 0) {
       searchSection.style.display = "block";
       hotelesSection.style.display = "block";
-      reservasSection.style.display = "none";
     }
 
     if (index === 1) {
-      searchSection.style.display = "none";
-      hotelesSection.style.display = "none";
       reservasSection.style.display = "block";
       cargarMisReservas();
     }
+
+    if (index === 2) {
+      pagosSectionDom.style.display = "block";
+      cargarPagoPendiente();
+    }
   });
 });
+
 
 // ===============================
 // EVENTOS
@@ -261,3 +272,67 @@ fechaEntrada.addEventListener("change", () => {
 fechaSalida.addEventListener("change", () => {
   document.getElementById("error-fechas").style.display = "none";
 });
+
+
+// ===============================
+// PAGOS SIMULADOS
+// ===============================
+const pagosSection = document.getElementById("pagos");
+const pagarBtn = document.getElementById("pagar-btn");
+const pagoMsg = document.getElementById("pago-msg");
+
+let reservaPendientePago = null;
+
+// Detectar reserva pendiente
+async function cargarPagoPendiente() {
+  if (!auth.currentUser) return;
+
+  const q = query(
+    collection(db, "reservas"),
+    where("userId", "==", auth.currentUser.uid),
+    where("estado", "==", "pendiente")
+  );
+
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    reservaPendientePago = snapshot.docs[0];
+    pagoMsg.textContent = `Reserva pendiente por pagar: ${reservaPendientePago.data().hotel}`;
+  } else {
+    pagoMsg.textContent = "No tienes pagos pendientes.";
+  }
+}
+
+// Procesar pago simulado
+pagarBtn?.addEventListener("click", async () => {
+  if (!reservaPendientePago) {
+    pagoMsg.textContent = "No hay reservas pendientes.";
+    return;
+  }
+
+  // Validación básica
+  const cardNumber = document.getElementById("card-number").value;
+  const cvv = document.getElementById("card-cvv").value;
+
+  if (cardNumber.length < 16 || cvv.length < 3) {
+    pagoMsg.textContent = "❌ Datos de tarjeta inválidos";
+    return;
+  }
+
+  // Simulación exitosa
+  await addDoc(collection(db, "pagos"), {
+    reservaId: reservaPendientePago.id,
+    userId: auth.currentUser.uid,
+    monto: reservaPendientePago.data().total,
+    fecha: new Date(),
+    metodo: "Tarjeta simulada"
+  });
+
+  await deleteDoc(doc(db, "reservas", reservaPendientePago.id));
+
+  pagoMsg.textContent = "✅ Pago realizado con éxito";
+  alert("💳 Pago aprobado (simulado)");
+
+  reservaPendientePago = null;
+});
+
