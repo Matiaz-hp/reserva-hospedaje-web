@@ -2,11 +2,15 @@ import { db } from "./firebase-config.js";
 import {
   collection,
   getDocs,
+  addDoc,
   query,
-  where
+  where,
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-// ELEMENTOS DOM
+const auth = getAuth();
+
+// DOM
 const hotelesList = document.getElementById("hoteles-list");
 const searchBtn = document.getElementById("search-btn");
 const fechaEntrada = document.getElementById("fecha-reserva");
@@ -14,85 +18,93 @@ const fechaSalida = document.getElementById("fecha-salida");
 const tipoHabitacion = document.getElementById("tipo-habitacion");
 const huespedes = document.getElementById("huespedes");
 
+// MODAL
+const reservaModal = document.getElementById("reserva-modal");
+const closeReserva = document.getElementById("close-reserva");
+const confirmarBtn = document.getElementById("confirmar-reserva");
+
+let reservaActual = null;
+
+// ===============================
 // CALENDARIOS
+// ===============================
 flatpickr("#fecha-reserva", { dateFormat: "Y-m-d" });
 flatpickr("#fecha-salida", { dateFormat: "Y-m-d" });
 
 // ===============================
 // CARGAR HOTELES
 // ===============================
-async function cargarHoteles(filtros = {}) {
+async function cargarHoteles() {
   hotelesList.innerHTML = "";
 
-  const hotelesRef = collection(db, "hoteles");
-  let q = hotelesRef;
-
-  // Filtro por tipo de habitación (si existe en Firestore)
-  if (filtros.tipo && filtros.tipo !== "Todas") {
-    q = query(q, where("tipo", "==", filtros.tipo));
-  }
-
-  const snapshot = await getDocs(q);
+  const snapshot = await getDocs(collection(db, "hoteles"));
 
   snapshot.forEach((docSnap) => {
     const h = docSnap.data();
 
     const card = document.createElement("div");
     card.className = "hotel-card";
-    card.style.opacity = 0;
-    card.style.transform = "translateY(20px)";
-
-    const imgUrl = `https://source.unsplash.com/400x300/?hotel,room`;
 
     card.innerHTML = `
-      <img src="${imgUrl}" alt="${h.nombre}">
+      <img src="https://source.unsplash.com/400x300/?hotel,room" />
       <div class="content">
         <h3>${h.nombre}</h3>
         <p>📍 ${h.ciudad}</p>
         <p>💲 ${h.precio} por noche</p>
-        <p id="clima-${docSnap.id}">Cargando clima...</p>
-        <button>Reservar</button>
+        <button class="btn-reservar">Reservar</button>
       </div>
     `;
 
+    // BOTÓN RESERVAR
+    card.querySelector(".btn-reservar").addEventListener("click", () => {
+      if (!auth.currentUser) {
+        alert("Debes iniciar sesión para reservar");
+        return;
+      }
+
+      if (!fechaEntrada.value || !fechaSalida.value) {
+        alert("Selecciona fechas de entrada y salida");
+        return;
+      }
+
+      reservaActual = {
+        hotelId: docSnap.id,
+        hotel: h.nombre,
+        precio: h.precio,
+        entrada: fechaEntrada.value,
+        salida: fechaSalida.value,
+        userId: auth.currentUser.uid,
+        createdAt: new Date(),
+      };
+
+      document.getElementById("reserva-hotel").textContent = h.nombre;
+      document.getElementById("reserva-precio").textContent = h.precio;
+      document.getElementById("reserva-entrada").textContent = fechaEntrada.value;
+      document.getElementById("reserva-salida").textContent = fechaSalida.value;
+
+      reservaModal.style.display = "flex";
+    });
+
     hotelesList.appendChild(card);
-
-    // CLIMA
-    if (h.lat && h.lng) {
-      fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${h.lat}&lon=${h.lng}&appid=TU_API_KEY&units=metric&lang=es`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          const climaP = card.querySelector(`#clima-${docSnap.id}`);
-          climaP.textContent = `🌤 ${data.weather[0].description}, ${data.main.temp}°C`;
-        })
-        .catch(() => {});
-    }
-
-    // ANIMACIÓN
-    setTimeout(() => {
-      card.style.opacity = 1;
-      card.style.transform = "translateY(0)";
-    }, 100);
   });
 }
 
 // ===============================
-// EVENTO BUSCAR
+// CONFIRMAR RESERVA
 // ===============================
-searchBtn.addEventListener("click", () => {
-  const filtros = {
-    fechaEntrada: fechaEntrada.value,
-    fechaSalida: fechaSalida.value,
-    tipo: tipoHabitacion.value,
-    huespedes: huespedes.value,
-  };
+confirmarBtn.addEventListener("click", async () => {
+  if (!reservaActual) return;
 
-  cargarHoteles(filtros);
+  await addDoc(collection(db, "reservas"), reservaActual);
+
+  reservaModal.style.display = "none";
+  alert("✅ Reserva realizada con éxito");
 });
 
-// CARGA INICIAL
-window.addEventListener("DOMContentLoaded", () => {
-  cargarHoteles();
+// CERRAR MODAL
+closeReserva.addEventListener("click", () => {
+  reservaModal.style.display = "none";
 });
+
+// INICIO
+window.addEventListener("DOMContentLoaded", cargarHoteles);
