@@ -266,6 +266,19 @@ footer {
     grid-template-columns: 1fr;
   }
 
+   
+#confirmar-reserva {
+  margin-top: 20px;
+  background: #111;
+  color: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+
   .topbar {
     flex-direction: column;
     gap: 12px;
