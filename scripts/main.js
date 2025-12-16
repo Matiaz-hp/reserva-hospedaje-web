@@ -10,13 +10,20 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth
 
 const auth = getAuth();
 
+// ===============================
 // DOM
+// ===============================
 const hotelesList = document.getElementById("hoteles-list");
-const searchBtn = document.getElementById("search-btn");
+const reservasList = document.getElementById("reservas-list");
+
+const searchSection = document.querySelector(".search-card");
+const hotelesSection = document.getElementById("hoteles");
+const reservasSection = document.getElementById("mis-reservas");
+
+const tabs = document.querySelectorAll(".tab");
+
 const fechaEntrada = document.getElementById("fecha-reserva");
 const fechaSalida = document.getElementById("fecha-salida");
-const tipoHabitacion = document.getElementById("tipo-habitacion");
-const huespedes = document.getElementById("huespedes");
 
 // MODAL
 const reservaModal = document.getElementById("reserva-modal");
@@ -26,17 +33,41 @@ const confirmarBtn = document.getElementById("confirmar-reserva");
 let reservaActual = null;
 
 // ===============================
-// CALENDARIOS
+// FECHAS
 // ===============================
 flatpickr("#fecha-reserva", { dateFormat: "Y-m-d" });
 flatpickr("#fecha-salida", { dateFormat: "Y-m-d" });
+
+// ===============================
+// TABS
+// ===============================
+tabs.forEach((tab, index) подтверждение => {
+  tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    // Reservar
+    if (index === 0) {
+      searchSection.style.display = "block";
+      hotelesSection.style.display = "block";
+      reservasSection.style.display = "none";
+    }
+
+    // Mis Reservas
+    if (index === 1) {
+      searchSection.style.display = "none";
+      hotelesSection.style.display = "none";
+      reservasSection.style.display = "block";
+      cargarMisReservas();
+    }
+  });
+});
 
 // ===============================
 // CARGAR HOTELES
 // ===============================
 async function cargarHoteles() {
   hotelesList.innerHTML = "";
-
   const snapshot = await getDocs(collection(db, "hoteles"));
 
   snapshot.forEach((docSnap) => {
@@ -51,24 +82,22 @@ async function cargarHoteles() {
         <h3>${h.nombre}</h3>
         <p>📍 ${h.ciudad}</p>
         <p>💲 ${h.precio} por noche</p>
-        <button class="btn-reservar">Reservar</button>
+        <button>Reservar</button>
       </div>
     `;
 
-    // BOTÓN RESERVAR
-    card.querySelector(".btn-reservar").addEventListener("click", () => {
+    card.querySelector("button").addEventListener("click", () => {
       if (!auth.currentUser) {
-        alert("Debes iniciar sesión para reservar");
+        alert("Debes iniciar sesión");
         return;
       }
 
       if (!fechaEntrada.value || !fechaSalida.value) {
-        alert("Selecciona fechas de entrada y salida");
+        alert("Selecciona fechas");
         return;
       }
 
       reservaActual = {
-        hotelId: docSnap.id,
         hotel: h.nombre,
         precio: h.precio,
         entrada: fechaEntrada.value,
@@ -93,15 +122,50 @@ async function cargarHoteles() {
 // CONFIRMAR RESERVA
 // ===============================
 confirmarBtn.addEventListener("click", async () => {
-  if (!reservaActual) return;
-
   await addDoc(collection(db, "reservas"), reservaActual);
-
   reservaModal.style.display = "none";
-  alert("✅ Reserva realizada con éxito");
+  alert("✅ Reserva guardada");
 });
 
+// ===============================
+// CARGAR MIS RESERVAS
+// ===============================
+async function cargarMisReservas() {
+  reservasList.innerHTML = "";
+
+  if (!auth.currentUser) {
+    reservasList.innerHTML = "<p>Inicia sesión para ver tus reservas</p>";
+    return;
+  }
+
+  const q = query(
+    collection(db, "reservas"),
+    where("userId", "==", auth.currentUser.uid)
+  );
+
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach((docSnap) => {
+    const r = docSnap.data();
+
+    const card = document.createElement("div");
+    card.className = "hotel-card reserva-card";
+
+    card.innerHTML = `
+      <div class="content">
+        <h3>${r.hotel}</h3>
+        <p>📅 ${r.entrada} → ${r.salida}</p>
+        <p>💲 ${r.precio} por noche</p>
+      </div>
+    `;
+
+    reservasList.appendChild(card);
+  });
+}
+
+// ===============================
 // CERRAR MODAL
+// ===============================
 closeReserva.addEventListener("click", () => {
   reservaModal.style.display = "none";
 });
