@@ -5,35 +5,34 @@ const hotelesList = document.getElementById('hoteles-list');
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
 
-// Cards de ejemplo
+// Hoteles de ejemplo en Nauta, Loreto
 const ejemploHoteles = [
-  {nombre:'Hotel Sol', ciudad:'Lima', precio:120},
-  {nombre:'Hotel Mar', ciudad:'Cusco', precio:80},
-  {nombre:'Hotel Andino', ciudad:'Arequipa', precio:100},
-  {nombre:'Hotel Plaza', ciudad:'Trujillo', precio:90}
+  {nombre:'Hotel Nauta River', ciudad:'Nauta', precio:120},
+  {nombre:'Amazon Lodge', ciudad:'Nauta', precio:150},
+  {nombre:'Hotel Selva', ciudad:'Nauta', precio:100},
+  {nombre:'Posada Loreto', ciudad:'Nauta', precio:90}
 ];
 
-// Función para mostrar hoteles
 async function cargarHoteles(filtro=''){
   hotelesList.innerHTML = '';
 
-  // Combinar ejemplo + Firestore
-  const hoteles = [...ejemploHoteles];
+  const hoteles = ejemploHoteles.filter(h => h.ciudad.toLowerCase() === 'nauta');
 
   try {
     const hotelesRef = collection(db,'hoteles');
-    let q = hotelesRef;
-    if(filtro){ q = query(hotelesRef, where("nombre",'==',filtro)); }
+    let q = query(hotelesRef, where("ciudad",'==','Nauta'));
+    if(filtro){ q = query(hotelesRef, where("ciudad",'==','Nauta'), where("nombre",'==',filtro)); }
+
     const snapshot = await getDocs(q);
     snapshot.forEach(docSnap=>{ hoteles.push(docSnap.data()); });
   } catch(err){
-    console.log("Firestore no disponible, usando ejemplos");
+    console.log("Firestore no disponible, usando ejemplos locales");
   }
 
   hoteles.forEach((h,index)=>{
     const card = document.createElement('div');
     card.className = 'hotel-card';
-    const imgUrl = `https://source.unsplash.com/400x300/?hotel,${h.ciudad}`;
+    const imgUrl = `https://source.unsplash.com/400x300/?hotel,nauta`;
     card.innerHTML = `<img src="${imgUrl}" alt="${h.nombre}">
                       <h3>${h.nombre}</h3>
                       <p>Ciudad: ${h.ciudad}</p>
@@ -50,3 +49,4 @@ searchBtn?.addEventListener('click', ()=>{ cargarHoteles(searchInput.value.trim(
 
 // Cargar al inicio
 window.addEventListener('DOMContentLoaded',()=>{ cargarHoteles(); });
+
