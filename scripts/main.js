@@ -5,14 +5,10 @@ import {
   addDoc,
   query,
   where,
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-
-import {
   deleteDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 const auth = getAuth();
 
@@ -59,6 +55,15 @@ function validarFechas(entrada, salida) {
 }
 
 // ===============================
+// CALCULAR NOCHES (PASO 6)
+// ===============================
+function calcularNoches(entrada, salida) {
+  const inicio = new Date(entrada);
+  const fin = new Date(salida);
+  return (fin - inicio) / (1000 * 60 * 60 * 24);
+}
+
+// ===============================
 // DISPONIBILIDAD
 // ===============================
 async function hotelDisponible(hotelId, entrada, salida) {
@@ -69,8 +74,8 @@ async function hotelDisponible(hotelId, entrada, salida) {
 
   const snapshot = await getDocs(q);
 
-  for (const doc of snapshot.docs) {
-    const r = doc.data();
+  for (const docSnap of snapshot.docs) {
+    const r = docSnap.data();
 
     const inicioReserva = new Date(r.entrada);
     const finReserva = new Date(r.salida);
@@ -125,10 +130,16 @@ async function cargarHoteles() {
         return;
       }
 
+      const noches = calcularNoches(fechaEntrada.value, fechaSalida.value);
+      const total = noches * h.precio;
+
+      // ===== PASO 6: TOTAL =====
       reservaActual = {
         hotelId: docSnap.id,
         hotel: h.nombre,
         precio: h.precio,
+        noches,
+        total,
         entrada: fechaEntrada.value,
         salida: fechaSalida.value,
         userId: auth.currentUser.uid,
@@ -139,6 +150,8 @@ async function cargarHoteles() {
       document.getElementById("reserva-precio").textContent = h.precio;
       document.getElementById("reserva-entrada").textContent = fechaEntrada.value;
       document.getElementById("reserva-salida").textContent = fechaSalida.value;
+      document.getElementById("reserva-noches").textContent = noches;
+      document.getElementById("reserva-total").textContent = total;
 
       reservaModal.style.display = "flex";
     });
@@ -191,22 +204,18 @@ async function cargarMisReservas() {
       <div class="content">
         <h3>${r.hotel}</h3>
         <p>📅 ${r.entrada} → ${r.salida}</p>
-        <p>💲 ${r.precio} por noche</p>
+        <p>🌙 Noches: ${r.noches}</p>
+        <p>💰 Total: $${r.total}</p>
         <button class="cancel-btn">❌ Cancelar reserva</button>
       </div>
     `;
 
     card.querySelector(".cancel-btn").addEventListener("click", async () => {
-      const confirmar = confirm(
-        "¿Estás seguro de cancelar esta reserva?"
-      );
-
-      if (!confirmar) return;
+      if (!confirm("¿Cancelar esta reserva?")) return;
 
       await deleteDoc(doc(db, "reservas", docSnap.id));
-
       alert("✅ Reserva cancelada");
-      cargarMisReservas(); // refrescar lista
+      cargarMisReservas();
     });
 
     reservasList.appendChild(card);
