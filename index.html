@@ -34,18 +34,6 @@
       cursor:pointer;
     }
 
-    .modal{
-      position: fixed !important;
-      inset: 0 !important;
-      display: none;
-      justify-content: center !important;
-      align-items: center !important;
-    }
-
-    .modal-content{
-      margin: auto !important;
-    }
-
     .reserva-item{
       border:1px solid #ccc;
       border-radius:8px;
@@ -215,34 +203,29 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script type="module">
 import { auth, db } from "./scripts/firebase-config.js";
-import { collection, getDocs, addDoc, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 import { loginAdmin } from "./scripts/admin-auth.js";
 
 const ADMINS = ["admin@tudominio.com"];
 
-// Inicializar Flatpickr
 flatpickr("#fecha-reserva",{dateFormat:"Y-m-d",allowInput:false});
 flatpickr("#fecha-salida",{dateFormat:"Y-m-d",allowInput:false});
 
-// Abrir modales
 document.getElementById("login-btn").onclick = ()=> document.getElementById("login-modal").style.display="flex";
 document.getElementById("register-btn").onclick = ()=> document.getElementById("register-modal").style.display="flex";
 document.getElementById("admin-btn").onclick = ()=> document.getElementById("admin-modal").style.display="flex";
 
-// Cerrar modales
 document.getElementById("close-login").onclick = ()=> document.getElementById("login-modal").style.display="none";
 document.getElementById("close-register").onclick = ()=> document.getElementById("register-modal").style.display="none";
 document.getElementById("close-admin").onclick = ()=> document.getElementById("admin-modal").style.display="none";
 document.getElementById("close-reserva").onclick = ()=> document.getElementById("reserva-modal").style.display="none";
 
-// Login Admin
 document.getElementById("admin-login-btn")?.addEventListener("click", () => {
   const email = document.getElementById("admin-email").value;
   const password = document.getElementById("admin-password").value;
   loginAdmin(email, password);
 });
 
-// Mostrar usuario logueado
 auth.onAuthStateChanged(async (user) => {
   const userName = document.getElementById("user-name");
   const logoutBtn = document.getElementById("logout-btn");
@@ -272,17 +255,14 @@ auth.onAuthStateChanged(async (user) => {
     loginBtn.style.display="inline-block";
     registerBtn.style.display="inline-block";
     adminBtn.style.display="inline-block";
-    cargarHoteles();
   }
 });
 
-// Cerrar sesión usuario
 document.getElementById("logout-btn").addEventListener("click", async ()=>{
   await auth.signOut();
   location.reload();
 });
 
-// Navegación secciones
 const tabs = document.querySelectorAll(".tab");
 const sections = ["reservar","mis-reservas","pagos"];
 tabs.forEach(tab=>{
@@ -295,8 +275,7 @@ tabs.forEach(tab=>{
 });
 
 // ----------------------
-// Cargar hoteles
-// ----------------------
+// Cargar hoteles (solo en reservar)
 async function cargarHoteles(){
   const hotelesList = document.getElementById("hoteles-list");
   hotelesList.innerHTML="";
@@ -316,7 +295,6 @@ async function cargarHoteles(){
     `;
   });
 
-  // Eventos reservar
   document.querySelectorAll(".reservar-btn").forEach(btn=>{
     btn.addEventListener("click", (e)=>{
       const hotelCard = e.target.closest(".hotel-card");
@@ -326,27 +304,24 @@ async function cargarHoteles(){
         alert("Debes iniciar sesión para reservar");
         return;
       }
+      const fechaEntrada = document.getElementById("fecha-reserva").value;
+      const fechaSalida = document.getElementById("fecha-salida").value;
+      if(!fechaEntrada || !fechaSalida){
+        alert("Debes seleccionar fechas");
+        return;
+      }
       document.getElementById("reserva-hotel-name").textContent=hotelName;
       document.getElementById("reserva-modal").style.display="flex";
-      document.getElementById("confirmar-reserva").onclick = ()=> confirmarReserva(user.uid, hotelName);
+      document.getElementById("confirmar-reserva").onclick = ()=> confirmarReserva(user.uid, hotelName, fechaEntrada, fechaSalida);
     });
   });
 }
 
 // ----------------------
-// Reservar hotel
-// ----------------------
-async function confirmarReserva(uid, hotel){
+// Confirmar reserva
+async function confirmarReserva(uid, hotel, fechaEntrada, fechaSalida){
   const cant = Number(document.getElementById("reserva-cant").value);
   const huespedes = Number(document.getElementById("reserva-huespedes").value);
-  const fechaEntrada = document.getElementById("fecha-reserva").value;
-  const fechaSalida = document.getElementById("fecha-salida").value;
-
-  if(!fechaEntrada || !fechaSalida){
-    alert("Debes seleccionar fechas");
-    return;
-  }
-
   await addDoc(collection(db,"reserva"),{
     userId:uid,
     hotel,
@@ -364,7 +339,6 @@ async function confirmarReserva(uid, hotel){
 
 // ----------------------
 // Mis reservas usuario
-// ----------------------
 async function cargarMisReservas(uid){
   const reservasList = document.getElementById("reservas-list");
   reservasList.innerHTML="";
@@ -389,7 +363,6 @@ async function cargarMisReservas(uid){
 
 // ----------------------
 // Pagos simulados
-// ----------------------
 document.getElementById("pagar-btn").addEventListener("click", ()=>{
   const msg = document.getElementById("pago-msg");
   msg.textContent="✅ Pago simulado realizado correctamente";
