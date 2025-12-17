@@ -239,6 +239,47 @@ tabs.forEach(tab => {
   };
 });
 
+
+import { auth } from "./firebase-config.js";
+import { signInWithEmailAndPassword } from
+  "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+// correos admin permitidos
+const ADMINS = [
+  "admin@tuhotel.com" // 👈 cambia por tu correo real
+];
+
+const adminLoginBtn = document.getElementById("admin-login-btn");
+
+adminLoginBtn?.addEventListener("click", async () => {
+  const email = document.getElementById("admin-email").value;
+  const password = document.getElementById("admin-password").value;
+  const error = document.getElementById("admin-error");
+
+  error.textContent = "";
+
+  if (!email || !password) {
+    error.textContent = "Completa todos los campos";
+    return;
+  }
+
+  if (!ADMINS.includes(email)) {
+    error.textContent = "No autorizado como administrador";
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+
+    // 🔐 login correcto → ir al dashboard
+    window.location.href = "admin-dashboard.html";
+
+  } catch (err) {
+    error.textContent = "Credenciales incorrectas";
+  }
+});
+
+
 /* ===============================
    EVENTOS
 ================================ */
