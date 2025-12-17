@@ -1,211 +1,205 @@
 import { auth, db } from "./firebase-config.js";
 import {
   collection,
-  addDoc,
   getDocs,
-  doc,
-  updateDoc,
+  addDoc,
   deleteDoc,
-  onSnapshot,
-  query,
-  orderBy
+  updateDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-/* ==========================
-   ELEMENTOS DEL DOM
-========================== */
-const hotelNombre = document.getElementById("hotel-nombre");
-const hotelCiudad = document.getElementById("hotel-ciudad");
-const hotelPrecio = document.getElementById("hotel-precio");
-const hotelCapacidad = document.getElementById("hotel-capacidad");
-const hotelFechaInicio = document.getElementById("hotel-fecha-inicio");
-const hotelFechaFin = document.getElementById("hotel-fecha-fin");
-const hotelImagen = document.getElementById("hotel-imagen");
-const guardarBtn = document.getElementById("guardar-hotel");
+/* =====================
+   ELEMENTOS DOM
+===================== */
 const listaHoteles = document.getElementById("lista-hoteles");
-const hotelMsg = document.getElementById("hotel-msg");
-
 const listaUsuarios = document.getElementById("lista-usuarios");
-const logoutBtn = document.getElementById("logout-admin");
+const listaReservas = document.getElementById("lista-reservas");
+const msgHotel = document.getElementById("hotel-msg");
+const guardarHotelBtn = document.getElementById("guardar-hotel");
 
-let editHotelId = null; // Para saber si estamos editando un hotel
+let hotelEditandoId = null;
 
-/* ==========================
-   PROTECCIÓN DEL DASHBOARD
-========================== */
-const ADMINS = ["admin@tudominio.com"];
+/* =====================
+   GUARDAR / EDITAR HOTEL
+===================== */
+guardarHotelBtn.addEventListener("click", async () => {
+  const hotel = {
+    nombre: document.getElementById("hotel-nombre").value.trim(),
+    ciudad: document.getElementById("hotel-ciudad").value.trim(),
+    precio: Number(document.getElementById("hotel-precio").value),
+    capacidad: Number(document.getElementById("hotel-capacidad").value),
+    fechaInicio: document.getElementById("hotel-fecha-inicio").value,
+    fechaFin: document.getElementById("hotel-fecha-fin").value,
+    imagen: document.getElementById("hotel-imagen").value.trim()
+  };
 
-onAuthStateChanged(auth, user => {
-  if (!user || !ADMINS.includes(user.email)) {
-    alert("No tienes permisos para acceder al Dashboard");
-    window.location.href = "index.html";
-  }
-});
-
-/* ==========================
-   LOGOUT ADMIN
-========================== */
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
-});
-
-/* ==========================
-   FUNCIONES CRUD HOTELS
-========================== */
-async function guardarHotel() {
-  const nombre = hotelNombre.value.trim();
-  const ciudad = hotelCiudad.value.trim();
-  const precio = hotelPrecio.value.trim();
-  const capacidad = hotelCapacidad.value.trim();
-  const fechaInicio = hotelFechaInicio.value;
-  const fechaFin = hotelFechaFin.value;
-  const imagen = hotelImagen.value.trim();
-
-  if (!nombre || !ciudad || !precio || !capacidad || !fechaInicio || !fechaFin || !imagen) {
-    hotelMsg.textContent = "❌ Completa todos los campos";
-    hotelMsg.className = "messages error";
+  if (!hotel.nombre || !hotel.ciudad || !hotel.precio) {
+    msgHotel.textContent = "❌ Completa los campos obligatorios";
     return;
   }
 
   try {
-    if (editHotelId) {
-      await updateDoc(doc(db, "hoteles", editHotelId), {
-        nombre,
-        ciudad,
-        precio: Number(precio),
-        capacidad: Number(capacidad),
-        fechaInicio,
-        fechaFin,
-        imagenUrl: imagen
-      });
-      hotelMsg.textContent = "✅ Hotel actualizado correctamente";
-      editHotelId = null;
-      guardarBtn.textContent = "Guardar Hotel";
+    if (hotelEditandoId) {
+      await updateDoc(doc(db, "hoteles", hotelEditandoId), hotel);
+      msgHotel.textContent = "✅ Hotel actualizado";
+      hotelEditandoId = null;
     } else {
-      await addDoc(collection(db, "hoteles"), {
-        nombre,
-        ciudad,
-        precio: Number(precio),
-        capacidad: Number(capacidad),
-        fechaInicio,
-        fechaFin,
-        imagenUrl: imagen,
-        createdAt: new Date()
-      });
-      hotelMsg.textContent = "✅ Hotel guardado correctamente";
+      await addDoc(collection(db, "hoteles"), hotel);
+      msgHotel.textContent = "✅ Hotel agregado";
     }
 
-    hotelNombre.value = "";
-    hotelCiudad.value = "";
-    hotelPrecio.value = "";
-    hotelCapacidad.value = "";
-    hotelFechaInicio.value = "";
-    hotelFechaFin.value = "";
-    hotelImagen.value = "";
-
-  } catch (err) {
-    hotelMsg.textContent = "❌ " + err.message;
-    hotelMsg.className = "messages error";
+    limpiarFormularioHotel();
+    cargarHoteles();
+  } catch (e) {
+    msgHotel.textContent = e.message;
   }
-}
-
-guardarBtn.addEventListener("click", guardarHotel);
-
-/* ==========================
-   LISTAR HOTELES EN TIEMPO REAL
-========================== */
-const qHoteles = query(collection(db, "hoteles"), orderBy("createdAt", "desc"));
-
-onSnapshot(qHoteles, (snapshot) => {
-  listaHoteles.innerHTML = "";
-  snapshot.forEach(docSnap => {
-    const h = docSnap.data();
-    const div = document.createElement("div");
-    div.className = "hotel-item";
-    div.innerHTML = `
-      <div class="hotel-info">
-        <img src="${h.imagenUrl}" alt="${h.nombre}" style="width:100px;height:60px;object-fit:cover;border-radius:5px;margin-right:10px;">
-        <strong>${h.nombre}</strong> – ${h.ciudad} – $${h.precio} – Cap: ${h.capacidad} – ${h.fechaInicio} a ${h.fechaFin}
-      </div>
-      <div class="hotel-actions">
-        <button class="edit" data-id="${docSnap.id}">Editar</button>
-        <button class="delete" data-id="${docSnap.id}">Eliminar</button>
-      </div>
-    `;
-    listaHoteles.appendChild(div);
-  });
-
-  // Editar hotel
-  document.querySelectorAll(".edit").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
-      const id = e.target.dataset.id;
-      const hotelRef = doc(db, "hoteles", id);
-      const hotelSnap = await getDocs(hotelRef);
-      const hotel = (await hotelRef.get()).data();
-      hotelNombre.value = hotel.nombre;
-      hotelCiudad.value = hotel.ciudad;
-      hotelPrecio.value = hotel.precio;
-      hotelCapacidad.value = hotel.capacidad;
-      hotelFechaInicio.value = hotel.fechaInicio;
-      hotelFechaFin.value = hotel.fechaFin;
-      hotelImagen.value = hotel.imagenUrl;
-      editHotelId = id;
-      guardarBtn.textContent = "Actualizar Hotel";
-    });
-  });
-
-  // Eliminar hotel
-  document.querySelectorAll(".delete").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
-      const id = e.target.dataset.id;
-      if (confirm("¿Eliminar este hotel?")) {
-        await deleteDoc(doc(db, "hoteles", id));
-        hotelMsg.textContent = "✅ Hotel eliminado";
-        hotelMsg.className = "messages";
-      }
-    });
-  });
 });
 
-/* ==========================
-   LISTAR USUARIOS
-========================== */
-async function cargarUsuarios() {
-  try {
-    const snapshot = await getDocs(collection(db, "users"));
-    listaUsuarios.innerHTML = "";
+/* =====================
+   LISTAR HOTELES
+===================== */
+async function cargarHoteles() {
+  listaHoteles.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "hoteles"));
 
-    snapshot.forEach(docSnap => {
-      const u = docSnap.data();
-      const div = document.createElement("div");
-      div.className = "user-item";
-      div.innerHTML = `
-        <div><strong>${u.name || "Sin nombre"}</strong> – ${u.email}</div>
-        <div>
-          <button class="delete-user" data-id="${docSnap.id}">Eliminar</button>
+  snapshot.forEach(d => {
+    const h = d.data();
+    listaHoteles.innerHTML += `
+      <div class="hotel-item">
+        <div class="hotel-info">
+          <img src="${h.imagen || 'https://via.placeholder.com/60'}">
+          <div>
+            <strong>${h.nombre}</strong><br>
+            ${h.ciudad} – $${h.precio}
+          </div>
         </div>
-      `;
-      listaUsuarios.appendChild(div);
-    });
+        <div>
+          <button class="btn-small edit" data-id="${d.id}">Editar</button>
+          <button class="btn-small delete" data-id="${d.id}">Eliminar</button>
+        </div>
+      </div>
+    `;
+  });
 
-    // Botones para eliminar usuario
-    document.querySelectorAll(".delete-user").forEach(btn => {
-      btn.addEventListener("click", async (e) => {
-        const id = e.target.dataset.id;
-        if (confirm("¿Eliminar este usuario?")) {
-          await deleteDoc(doc(db, "users", id));
-          alert("Usuario eliminado de Firestore");
-          cargarUsuarios();
-        }
-      });
-    });
+  // Eventos
+  document.querySelectorAll(".edit").forEach(btn => {
+    btn.onclick = () => editarHotel(btn.dataset.id);
+  });
 
-  } catch (err) {
-    listaUsuarios.innerHTML = "❌ Error al cargar usuarios: " + err.message;
-  }
+  document.querySelectorAll(".delete").forEach(btn => {
+    btn.onclick = () => eliminarHotel(btn.dataset.id);
+  });
 }
 
+/* =====================
+   EDITAR HOTEL
+===================== */
+async function editarHotel(id) {
+  const snap = await getDocs(collection(db, "hoteles"));
+  snap.forEach(d => {
+    if (d.id === id) {
+      const h = d.data();
+      document.getElementById("hotel-nombre").value = h.nombre;
+      document.getElementById("hotel-ciudad").value = h.ciudad;
+      document.getElementById("hotel-precio").value = h.precio;
+      document.getElementById("hotel-capacidad").value = h.capacidad;
+      document.getElementById("hotel-fecha-inicio").value = h.fechaInicio;
+      document.getElementById("hotel-fecha-fin").value = h.fechaFin;
+      document.getElementById("hotel-imagen").value = h.imagen;
+      hotelEditandoId = id;
+    }
+  });
+}
+
+/* =====================
+   ELIMINAR HOTEL
+===================== */
+async function eliminarHotel(id) {
+  if (!confirm("¿Eliminar este hotel?")) return;
+  await deleteDoc(doc(db, "hoteles", id));
+  cargarHoteles();
+}
+
+/* =====================
+   LISTAR USUARIOS
+===================== */
+async function cargarUsuarios() {
+  listaUsuarios.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "users"));
+
+  snapshot.forEach(d => {
+    const u = d.data();
+    listaUsuarios.innerHTML += `
+      <div class="user-item">
+        <span>${u.name} – ${u.email}</span>
+        <button class="btn-small delete" data-id="${d.id}">Eliminar</button>
+      </div>
+    `;
+  });
+
+  document.querySelectorAll(".user-item .delete").forEach(btn => {
+    btn.onclick = async () => {
+      if (!confirm("¿Eliminar usuario?")) return;
+      await deleteDoc(doc(db, "users", btn.dataset.id));
+      cargarUsuarios();
+    };
+  });
+}
+
+/* =====================
+   LISTAR RESERVAS
+===================== */
+async function cargarReservas() {
+  listaReservas.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "reserva"));
+
+  snapshot.forEach(d => {
+    const r = d.data();
+    listaReservas.innerHTML += `
+      <div class="reserva-item">
+        <div class="reserva-info">
+          <img src="${r.imagen || 'https://via.placeholder.com/60'}">
+          <div>
+            <strong>${r.hotel}</strong><br>
+            Usuario: ${r.userEmail}<br>
+            ${r.fechaEntrada} → ${r.fechaSalida}<br>
+            Estado: <b>${r.estado}</b>
+          </div>
+        </div>
+        ${r.estado === "pendiente"
+          ? `<button class="btn-small" data-pay="${d.id}">Marcar pagado</button>`
+          : ""}
+        <button class="btn-small delete" data-del="${d.id}">Eliminar</button>
+      </div>
+    `;
+  });
+
+  document.querySelectorAll("[data-pay]").forEach(btn => {
+    btn.onclick = async () => {
+      await updateDoc(doc(db, "reserva", btn.dataset.pay), { estado: "pagado" });
+      cargarReservas();
+    };
+  });
+
+  document.querySelectorAll("[data-del]").forEach(btn => {
+    btn.onclick = async () => {
+      await deleteDoc(doc(db, "reserva", btn.dataset.del));
+      cargarReservas();
+    };
+  });
+}
+
+/* =====================
+   UTIL
+===================== */
+function limpiarFormularioHotel() {
+  document.querySelectorAll("#hoteles-tab input").forEach(i => i.value = "");
+}
+
+/* =====================
+   INIT
+===================== */
+cargarHoteles();
 cargarUsuarios();
+cargarReservas();
 
