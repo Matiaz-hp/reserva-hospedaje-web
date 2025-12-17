@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -34,6 +33,7 @@
       font-size:22px;
       cursor:pointer;
     }
+
     .reserva-item{
       border:1px solid #ccc;
       border-radius:8px;
@@ -41,6 +41,7 @@
       margin-bottom:10px;
       background:#fdfdfd;
     }
+
     .hotel-card{
       border:1px solid #ccc;
       border-radius:8px;
@@ -102,22 +103,8 @@
       <input type="text" id="fecha-salida" readonly>
     </div>
     <div class="field">
-      <label>Tipo de habitación</label>
-      <select id="tipo-habitacion">
-        <option>Todas</option>
-        <option>Simple</option>
-        <option>Doble</option>
-        <option>Matrimonial</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Huéspedes</label>
-      <select id="huespedes">
-        <option>1 persona</option>
-        <option>2 personas</option>
-        <option>3 personas</option>
-        <option>4 personas</option>
-      </select>
+      <label>Nombre o Ciudad</label>
+      <input type="text" id="buscar-hotel" placeholder="Escribe nombre o ciudad">
     </div>
   </div>
   <p id="error-fechas" style="display:none;color:#c0392b;"></p>
@@ -136,7 +123,14 @@
 
 <section id="pagos" style="display:none;">
   <h2 class="section-title">Pagos</h2>
-  <div id="pagos-list" class="hoteles-grid"></div>
+  <div class="search-card">
+    <input id="card-number" placeholder="Número de tarjeta">
+    <input id="card-name" placeholder="Nombre del titular">
+    <input id="card-exp" placeholder="MM/AA">
+    <input id="card-cvv" placeholder="CVV">
+    <button id="pagar-btn">💳 Pagar Reserva</button>
+    <p id="pago-msg"></p>
+  </div>
 </section>
 
 <footer>&copy; 2025 Sistema de Reservas Hotel</footer>
@@ -183,24 +177,7 @@
     <input type="number" id="reserva-cant" value="1" min="1">
     <label>Huéspedes</label>
     <input type="number" id="reserva-huespedes" value="1" min="1">
-    <label>Fecha de entrada</label>
-    <input type="text" id="reserva-fecha-entrada" readonly>
-    <label>Fecha de salida</label>
-    <input type="text" id="reserva-fecha-salida" readonly>
     <button id="confirmar-reserva">Confirmar Reserva</button>
-  </div>
-</div>
-
-<div id="pago-modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="close-pago">&times;</span>
-    <h3 id="pago-hotel-name"></h3>
-    <p>Ingrese los datos de la tarjeta</p>
-    <input type="text" id="card-number" placeholder="Número de tarjeta">
-    <input type="text" id="card-name" placeholder="Nombre del titular">
-    <input type="text" id="card-exp" placeholder="MM/AA">
-    <input type="text" id="card-cvv" placeholder="CVV">
-    <button id="pagar-reserva-btn">💳 Pagar Reserva</button>
   </div>
 </div>
 
@@ -212,26 +189,24 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script type="module">
 import { auth, db } from "./scripts/firebase-config.js";
-import { collection, getDocs, addDoc, query, where, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { collection, getDocs, addDoc, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 import { loginAdmin } from "./scripts/admin-auth.js";
 
 const ADMINS = ["admin@tudominio.com"];
 
-// Flatpickr
 flatpickr("#fecha-reserva",{dateFormat:"Y-m-d",allowInput:false});
 flatpickr("#fecha-salida",{dateFormat:"Y-m-d",allowInput:false});
-flatpickr("#reserva-fecha-entrada",{dateFormat:"Y-m-d",allowInput:false});
-flatpickr("#reserva-fecha-salida",{dateFormat:"Y-m-d",allowInput:false});
 
 // Abrir modales
 document.getElementById("login-btn").onclick = ()=> document.getElementById("login-modal").style.display="flex";
 document.getElementById("register-btn").onclick = ()=> document.getElementById("register-modal").style.display="flex";
 document.getElementById("admin-btn").onclick = ()=> document.getElementById("admin-modal").style.display="flex";
+
+// Cerrar modales
 document.getElementById("close-login").onclick = ()=> document.getElementById("login-modal").style.display="none";
 document.getElementById("close-register").onclick = ()=> document.getElementById("register-modal").style.display="none";
 document.getElementById("close-admin").onclick = ()=> document.getElementById("admin-modal").style.display="none";
 document.getElementById("close-reserva").onclick = ()=> document.getElementById("reserva-modal").style.display="none";
-document.getElementById("close-pago").onclick = ()=> document.getElementById("pago-modal").style.display="none";
 
 // Login Admin
 document.getElementById("admin-login-btn")?.addEventListener("click", () => {
@@ -240,8 +215,8 @@ document.getElementById("admin-login-btn")?.addEventListener("click", () => {
   loginAdmin(email, password);
 });
 
-// Estado usuario
-auth.onAuthStateChanged(async (user)=>{
+// Mostrar usuario logueado
+auth.onAuthStateChanged(async (user) => {
   const userName = document.getElementById("user-name");
   const logoutBtn = document.getElementById("logout-btn");
   const loginBtn = document.getElementById("login-btn");
@@ -260,10 +235,7 @@ auth.onAuthStateChanged(async (user)=>{
       logoutBtn.style.display="inline-block";
       loginBtn.style.display="none";
       registerBtn.style.display="none";
-      adminBtn.style.display="inline-block";
-      cargarHoteles();
-      cargarMisReservas(user.uid);
-      cargarPagos(user.uid);
+      adminBtn.style.display="none"; // Admin desaparece
     }
   }else{
     userName.textContent="";
@@ -271,17 +243,17 @@ auth.onAuthStateChanged(async (user)=>{
     loginBtn.style.display="inline-block";
     registerBtn.style.display="inline-block";
     adminBtn.style.display="inline-block";
-    cargarHoteles();
   }
+  cargarHoteles();
+  if(user) cargarMisReservas(user.uid);
 });
 
-// Logout
 document.getElementById("logout-btn").addEventListener("click", async ()=>{
   await auth.signOut();
   location.reload();
 });
 
-// Tabs
+// Navegación secciones
 const tabs = document.querySelectorAll(".tab");
 const sections = ["reservar","mis-reservas","pagos"];
 tabs.forEach(tab=>{
@@ -294,14 +266,19 @@ tabs.forEach(tab=>{
 });
 
 // ----------------------
-// Cargar hoteles
-// ----------------------
+// Cargar hoteles (solo en "Reservar")
 async function cargarHoteles(){
   const hotelesList = document.getElementById("hoteles-list");
   hotelesList.innerHTML="";
   const snapshot = await getDocs(collection(db,"hoteles"));
+  const filtro = document.getElementById("buscar-hotel").value.toLowerCase();
+
   snapshot.forEach(doc=>{
     const h = doc.data();
+    const nombre = h.nombre.toLowerCase();
+    const ciudad = h.ciudad.toLowerCase();
+    if(filtro && !(nombre.includes(filtro) || ciudad.includes(filtro))) return; // filtro
+
     hotelesList.innerHTML += `
       <div class="hotel-card" data-id="${doc.id}">
         <img src="${h.imagen || 'https://via.placeholder.com/120x80'}" alt="${h.nombre}">
@@ -315,8 +292,9 @@ async function cargarHoteles(){
     `;
   });
 
+  // Evento reservar
   document.querySelectorAll(".reservar-btn").forEach(btn=>{
-    btn.addEventListener("click",(e)=>{
+    btn.addEventListener("click", (e)=>{
       const hotelCard = e.target.closest(".hotel-card");
       const hotelName = hotelCard.querySelector(".hotel-info strong").textContent;
       const user = auth.currentUser;
@@ -324,24 +302,25 @@ async function cargarHoteles(){
         alert("Debes iniciar sesión para reservar");
         return;
       }
-      document.getElementById("reserva-hotel-name").textContent = hotelName;
+      const fechaEntrada = document.getElementById("fecha-reserva").value;
+      const fechaSalida = document.getElementById("fecha-salida").value;
+      if(!fechaEntrada || !fechaSalida){
+        alert("Debes seleccionar fechas");
+        return;
+      }
+      document.getElementById("reserva-hotel-name").textContent=hotelName;
       document.getElementById("reserva-modal").style.display="flex";
-      document.getElementById("confirmar-reserva").onclick = ()=>{
-        const fechaEntrada = document.getElementById("reserva-fecha-entrada").value;
-        const fechaSalida = document.getElementById("reserva-fecha-salida").value;
-        if(!fechaEntrada || !fechaSalida){
-          alert("Debes seleccionar fechas");
-          return;
-        }
-        confirmarReserva(user.uid, hotelName, fechaEntrada, fechaSalida);
-      };
+      document.getElementById("confirmar-reserva").onclick = ()=> confirmarReserva(user.uid, hotelName, fechaEntrada, fechaSalida);
     });
   });
 }
 
 // ----------------------
-// Confirmar reserva
+// Buscar habitaciones
+document.getElementById("search-btn").addEventListener("click", cargarHoteles);
+
 // ----------------------
+// Confirmar reserva
 async function confirmarReserva(uid, hotel, fechaEntrada, fechaSalida){
   const cant = Number(document.getElementById("reserva-cant").value);
   const huespedes = Number(document.getElementById("reserva-huespedes").value);
@@ -358,12 +337,10 @@ async function confirmarReserva(uid, hotel, fechaEntrada, fechaSalida){
   document.getElementById("reserva-modal").style.display="none";
   alert("Reserva realizada correctamente");
   cargarMisReservas(uid);
-  cargarPagos(uid);
 }
 
 // ----------------------
 // Mis reservas usuario
-// ----------------------
 async function cargarMisReservas(uid){
   const reservasList = document.getElementById("reservas-list");
   reservasList.innerHTML="";
@@ -386,58 +363,8 @@ async function cargarMisReservas(uid){
   });
 }
 
-// ----------------------
-// Pagos usuario
-// ----------------------
-async function cargarPagos(uid){
-  const pagosList = document.getElementById("pagos-list");
-  pagosList.innerHTML="";
-  const q = query(collection(db,"reserva"),where("userId","==",uid));
-  const snapshot = await getDocs(q);
-  snapshot.forEach(doc=>{
-    const r = doc.data();
-    if(r.estado==="pendiente"){
-      pagosList.innerHTML += `
-        <div class="reserva-item">
-          <strong>Hotel:</strong> ${r.hotel}<br>
-          <strong>Entrada:</strong> ${r.fechaEntrada}<br>
-          <strong>Salida:</strong> ${r.fechaSalida}<br>
-          <strong>Habitaciones:</strong> ${r.habitaciones}<br>
-          <strong>Huéspedes:</strong> ${r.huespedes}<br>
-          <button class="hotel-btn pagar-btn" data-id="${doc.id}" data-hotel="${r.hotel}">💳 Pagar</button>
-          <button class="hotel-btn cancelar-btn" data-id="${doc.id}">❌ Cancelar</button>
-        </div>
-      `;
-    }
-  });
-
-  // Pagar reserva
-  document.querySelectorAll(".pagar-btn").forEach(btn=>{
-    btn.addEventListener("click",(e)=>{
-      const id = btn.dataset.id;
-      const hotel = btn.dataset.hotel;
-      document.getElementById("pago-hotel-name").textContent=hotel;
-      document.getElementById("pago-modal").style.display="flex";
-      document.getElementById("pagar-reserva-btn").onclick = async ()=>{
-        await updateDoc(doc(db,"reserva",id),{estado:"pagado"});
-        document.getElementById("pago-modal").style.display="none";
-        cargarPagos(auth.currentUser.uid);
-        cargarMisReservas(auth.currentUser.uid);
-      };
-    });
-  });
-
-  // Cancelar reserva
-  document.querySelectorAll(".cancelar-btn").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const id = btn.dataset.id;
-      await deleteDoc(doc(db,"reserva",id));
-      cargarPagos(auth.currentUser.uid);
-      cargarMisReservas(auth.currentUser.uid);
-    });
-  });
-}
 </script>
 
 </body>
 </html>
+
