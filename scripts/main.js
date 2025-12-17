@@ -104,13 +104,16 @@ async function cargarHoteles() {
     card.className = "hotel-card";
 
     card.innerHTML = `
-      <div class="content">
-        <h3>${h.nombre}</h3>
-        <p>📍 ${h.ciudad}</p>
-        <p>💲 ${h.precio} por noche</p>
-        <button>Reservar</button>
-      </div>
-    `;
+  <img src="${h.imagen || 'https://via.placeholder.com/300x180'}" class="hotel-img">
+
+  <div class="content">
+    <h3>${h.nombre}</h3>
+    <p>📍 <b>Ciudad:</b> ${h.ciudad}</p>
+    <p>🛏 <b>Capacidad:</b> ${h.capacidad} personas</p>
+    <p>💰 <b>Precio:</b> S/. ${h.precio} por noche</p>
+    <button>Reservar</button>
+  </div>
+`;
 
     card.querySelector("button").onclick = () => {
       if (!auth.currentUser) {
@@ -121,18 +124,24 @@ async function cargarHoteles() {
       const noches = calcularNoches(fechaEntrada.value, fechaSalida.value);
       const total = noches * h.precio;
 
-      reservaActual = {
-        hotelId: docSnap.id,
-        hotel: h.nombre,
-        precio: h.precio,
-        noches,
-        total,
-        entrada: fechaEntrada.value,
-        salida: fechaSalida.value,
-        userId: auth.currentUser.uid,
-        estado: "pendiente",
-        createdAt: new Date()
-      };
+reservaActual = {
+  hotelId: docSnap.id,
+  hotel: h.nombre,
+  ciudad: h.ciudad,
+  imagen: h.imagen || "",
+  precio: h.precio,           // precio por noche
+  noches,
+  total: noches * h.precio,   // total calculado
+  entrada: fechaEntrada.value,
+  salida: fechaSalida.value,
+
+  userId: auth.currentUser.uid,
+  userEmail: auth.currentUser.email,
+
+  estado: "pendiente",
+  createdAt: new Date()
+};
+
 
       document.getElementById("reserva-hotel").textContent = h.nombre;
       document.getElementById("reserva-precio").textContent = h.precio;
@@ -179,11 +188,19 @@ async function cargarMisReservas() {
     const r = docSnap.data();
     const div = document.createElement("div");
     div.className = "hotel-card";
+    // div.innerHTML = `
+    //   <h3>${r.hotel}</h3>
+    //   <p>${r.entrada} → ${r.salida}</p>
+    //   <p>Total: <b>S/. ${r.total}</b></p>
+    // `;
+
     div.innerHTML = `
-      <h3>${r.hotel}</h3>
-      <p>${r.entrada} → ${r.salida}</p>
-      <p>Total: $${r.total}</p>
-    `;
+  <img src="${r.imagen || 'https://via.placeholder.com/300x180'}">
+  <h3>${r.hotel}</h3>
+  <p>📍 ${r.ciudad}</p>
+  <p>${r.entrada} → ${r.salida}</p>
+  <p>Total: <b>S/. ${r.total}</b></p>
+`;
     reservasList.appendChild(div);
   });
 }
