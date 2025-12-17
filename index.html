@@ -147,7 +147,6 @@
       <input id="register-password">
       <button>Registrarse</button>
     </form>
-    <button id="google-register">Registrarse con Google</button>
   </div>
 </div>
 
@@ -156,7 +155,9 @@
     <span class="close" id="close-admin">&times;</span>
     <input id="admin-email">
     <input id="admin-password">
-    <button id="admin-login-btn">Entrar al Dashboard</button>
+    <button id="admin-login-btn" type="button">
+  Entrar al Dashboard
+</button>
   </div>
 </div>
 
@@ -191,6 +192,12 @@
     document.getElementById("admin-modal").style.display="none";
   document.getElementById("close-reserva").onclick = () =>
     document.getElementById("reserva-modal").style.display="none";
+
+
+    document.getElementById("admin-login-btn")
+    ?.addEventListener("click", () => {
+      console.log("CLICK ADMIN OK");
+    });
 </script>
 
 </body>
