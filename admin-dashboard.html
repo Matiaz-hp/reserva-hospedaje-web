@@ -29,13 +29,27 @@
       border-radius:10px;
       margin-bottom:20px;
     }
-    .admin-card input{
+    .admin-card input, .admin-card select{
       width:100%;
       margin-bottom:10px;
       padding:8px;
     }
     .admin-card button{
       padding:8px 16px;
+      margin-right: 5px;
+    }
+    .hotel-item{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .hotel-info img{
+      width:80px;
+      height:50px;
+      object-fit:cover;
+      margin-right:10px;
     }
   </style>
 </head>
@@ -51,11 +65,10 @@
   <!-- GESTIÓN DE HOTELES -->
   <div class="admin-card">
     <h3>🏨 Gestionar Hoteles</h3>
-
     <input type="text" id="hotel-nombre" placeholder="Nombre del hotel">
     <input type="text" id="hotel-ciudad" placeholder="Ciudad">
     <input type="number" id="hotel-precio" placeholder="Precio por noche">
-
+    <input type="file" id="hotel-imagen" accept="image/*">
     <button id="guardar-hotel">Guardar Hotel</button>
     <p id="admin-msg"></p>
   </div>
@@ -71,13 +84,12 @@
 <script type="module" src="scripts/firebase-config.js"></script>
 <script type="module" src="scripts/admin-auth.js"></script>
 <script type="module" src="scripts/admin.js"></script>
+
 <script type="module">
   import { protectAdminDashboard } from "./scripts/admin-auth.js";
   import { auth } from "./scripts/firebase-config.js";
-  
-  const ADMINS = ["admin@tudominio.com"];
 
-  // PROTECCIÓN DEL DASHBOARD: solo deja entrar al admin
+  // PROTECCIÓN DEL DASHBOARD
   protectAdminDashboard();
 
   // Cerrar sesión del admin
