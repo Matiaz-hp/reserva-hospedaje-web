@@ -246,7 +246,7 @@ import { signInWithEmailAndPassword } from
 
 // correos admin permitidos
 const ADMINS = [
-  "admin@tuhotel.com" // 👈 cambia por tu correo real
+  "admin@tudominio.com" // 👈 cambia por tu correo real
 ];
 
 const adminLoginBtn = document.getElementById("admin-login-btn");
