@@ -1,12 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Dashboard Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <link rel="stylesheet" href="styles/styles.css">
-  
+
   <style>
     body {
       background: #f0f2f5;
@@ -39,12 +40,17 @@
       color: white;
       border-radius: 5px;
       cursor: pointer;
+      transition: background 0.3s;
+    }
+    .tab-buttons button:hover {
+      background: #2c80b4;
     }
     .tab-buttons button.active {
       background: #2c80b4;
     }
     .tab-content {
       display: none;
+      animation: fadeIn 0.5s;
     }
     .tab-content.active {
       display: block;
@@ -54,6 +60,12 @@
       padding: 20px;
       border-radius: 10px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .card input, .card select {
       width: 100%;
@@ -69,28 +81,42 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      transition: background 0.3s;
+    }
+    .card button:hover {
+      background: #219150;
     }
     .card button.delete {
       background: #e74c3c;
     }
+    .card button.delete:hover {
+      background: #c0392b;
+    }
     .card button.edit {
       background: #f39c12;
     }
-    .hotel-item, .user-item {
+    .card button.edit:hover {
+      background: #d68910;
+    }
+    .hotel-item, .user-item, .reserva-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
       border-bottom: 1px solid #eee;
+      transition: background 0.2s;
     }
-    .hotel-item img {
+    .hotel-item:hover, .user-item:hover, .reserva-item:hover {
+      background: #f9f9f9;
+    }
+    .hotel-item img, .reserva-item img {
       width: 60px;
       height: 40px;
       object-fit: cover;
       border-radius: 5px;
       margin-right: 10px;
     }
-    .hotel-info {
+    .hotel-info, .reserva-info {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -102,6 +128,21 @@
     }
     .error {
       color: red;
+    }
+
+    /* Animación de fadeIn */
+    @keyframes fadeIn {
+      from {opacity:0;}
+      to {opacity:1;}
+    }
+
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+    }
+
+    .reserva-item button {
+      margin-left: 6px;
     }
   </style>
 </head>
@@ -117,6 +158,7 @@
   <div class="tab-buttons">
     <button class="active" data-tab="hoteles-tab">Gestión de Hoteles</button>
     <button data-tab="usuarios-tab">Gestión de Usuarios</button>
+    <button data-tab="reservas-tab">Reservas de Usuarios</button>
   </div>
 
   <!-- GESTIÓN DE HOTELES -->
@@ -148,17 +190,23 @@
     </div>
   </div>
 
+  <!-- RESERVAS DE USUARIOS -->
+  <div id="reservas-tab" class="tab-content">
+    <div class="card">
+      <h3>Reservas Realizadas</h3>
+      <div id="lista-reservas"></div>
+    </div>
+  </div>
+
 </div>
 
 <script type="module" src="scripts/firebase-config.js"></script>
 <script type="module" src="scripts/admin-auth.js"></script>
-<script type="module" src="scripts/admin.js"></script>
-
 <script type="module">
+  import { auth, db } from "./scripts/firebase-config.js";
+  import { collection, getDocs, updateDoc, doc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
   import { protectAdminDashboard } from "./scripts/admin-auth.js";
-  import { auth } from "./scripts/firebase-config.js";
 
-  // PROTECCIÓN DEL DASHBOARD
   protectAdminDashboard();
 
   // Tabs
@@ -173,13 +221,66 @@
     });
   });
 
-  // Logout Admin
+  // Logout
   document.getElementById('logout-admin').addEventListener('click', async () => {
     await auth.signOut();
     window.location.href = "index.html";
   });
+
+  // ----------------------
+  // Cargar reservas de usuarios
+  // ----------------------
+  async function cargarReservas(){
+    const lista = document.getElementById("lista-reservas");
+    lista.innerHTML = "";
+    const q = query(collection(db,"reserva"));
+    const snapshot = await getDocs(q);
+    if(snapshot.empty){
+      lista.innerHTML = "<p>No hay reservas.</p>";
+      return;
+    }
+    snapshot.forEach(docSnap=>{
+      const r = docSnap.data();
+      lista.innerHTML += `
+        <div class="reserva-item">
+          <div class="reserva-info">
+            <img src="https://via.placeholder.com/60x40" alt="hotel">
+            <div>
+              <strong>Usuario:</strong> ${r.userId}<br>
+              <strong>Hotel:</strong> ${r.hotel}<br>
+              <strong>Entrada:</strong> ${r.fechaEntrada}<br>
+              <strong>Salida:</strong> ${r.fechaSalida}<br>
+              <strong>Habitaciones:</strong> ${r.habitaciones}<br>
+              <strong>Huéspedes:</strong> ${r.huespedes}<br>
+              <strong>Estado:</strong> ${r.estado}
+            </div>
+          </div>
+          ${r.estado==="pendiente" ? `<button class="btn-small" data-id="${docSnap.id}" data-action="pagar">Marcar como pagado</button>` : ''}
+          <button class="btn-small delete" data-id="${docSnap.id}" data-action="cancelar">Cancelar</button>
+        </div>
+      `;
+    });
+
+    // Botones
+    document.querySelectorAll('[data-action="pagar"]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.id;
+        await updateDoc(doc(db,"reserva",id),{estado:"pagado"});
+        cargarReservas();
+      });
+    });
+    document.querySelectorAll('[data-action="cancelar"]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.id;
+        await deleteDoc(doc(db,"reserva",id));
+        cargarReservas();
+      });
+    });
+  }
+
+  // Cargar reservas al iniciar
+  cargarReservas();
 </script>
 
 </body>
 </html>
-
