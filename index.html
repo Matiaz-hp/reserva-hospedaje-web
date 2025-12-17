@@ -7,6 +7,34 @@
 
   <link rel="stylesheet" href="styles/styles.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- FIX MODALES -->
+  <style>
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal-content{
+      background:#fff;
+      padding:25px;
+      border-radius:10px;
+      width:100%;
+      max-width:420px;
+      position:relative;
+    }
+    .close{
+      position:absolute;
+      top:10px;
+      right:15px;
+      font-size:22px;
+      cursor:pointer;
+    }
+  </style>
 </head>
 <body>
 
@@ -16,18 +44,14 @@
 
   <div class="auth">
     <span id="user-name"></span>
-
     <button id="login-btn">Iniciar Sesión</button>
     <button id="register-btn">Registrarse</button>
-
-    <!-- BOTÓN ADMIN -->
     <button id="admin-btn">Admin</button>
-
     <button id="logout-btn" style="display:none;">Cerrar sesión</button>
   </div>
 </header>
 
-<!-- ================= TABS USUARIO ================= -->
+<!-- ================= TABS ================= -->
 <nav class="tabs">
   <button class="tab active" data-tab="reservar">Reservar</button>
   <button class="tab" data-tab="mis-reservas">Mis Reservas</button>
@@ -36,145 +60,110 @@
 
 <!-- ================= RESERVAR ================= -->
 <section class="search-card" id="reservar">
-
   <h2>Buscar Habitaciones Disponibles</h2>
-  <p>Encuentra la habitación perfecta para tu estadía</p>
 
   <div class="search-grid">
-
     <div class="field">
       <label>Fecha de entrada</label>
-      <input type="text" id="fecha-reserva" placeholder="yyyy-mm-dd">
+      <input type="text" id="fecha-reserva">
     </div>
-
     <div class="field">
       <label>Fecha de salida</label>
-      <input type="text" id="fecha-salida" placeholder="yyyy-mm-dd">
+      <input type="text" id="fecha-salida">
     </div>
-
-    <div class="field">
-      <label>Tipo de habitación</label>
-      <select id="tipo-habitacion">
-        <option>Todas</option>
-        <option>Simple</option>
-        <option>Doble</option>
-        <option>Matrimonial</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Huéspedes</label>
-      <select id="huespedes">
-        <option>1 persona</option>
-        <option>2 personas</option>
-        <option>3 personas</option>
-        <option>4 personas</option>
-      </select>
-    </div>
-
   </div>
 
-  <p id="error-fechas" style="display:none;color:#c0392b;margin-top:10px;"></p>
-
-  <button id="search-btn" class="search-btn">
-    🔍 Buscar Habitaciones
-  </button>
-
+  <p id="error-fechas" style="display:none;color:#c0392b;"></p>
+  <button id="search-btn">Buscar</button>
 </section>
 
-<!-- ================= HOTELES ================= -->
 <section id="hoteles">
-  <h2 class="section-title">Habitaciones Disponibles</h2>
-  <div class="hoteles-grid" id="hoteles-list"></div>
+  <h2>Habitaciones Disponibles</h2>
+  <div id="hoteles-list" class="hoteles-grid"></div>
 </section>
 
 <!-- ================= MIS RESERVAS ================= -->
 <section id="mis-reservas" style="display:none;">
-  <h2 class="section-title">Mis Reservas</h2>
+  <h2>Mis Reservas</h2>
   <div id="reservas-list" class="hoteles-grid"></div>
 </section>
 
 <!-- ================= PAGOS ================= -->
 <section id="pagos" style="display:none;">
-  <h2 class="section-title">Pagos</h2>
+  <h2>Pagos</h2>
 
   <div class="search-card">
-    <h3>Pago de Reserva</h3>
-
-    <label>Número de tarjeta</label>
-    <input type="text" id="card-number" placeholder="4111 1111 1111 1111">
-
-    <label>Nombre del titular</label>
-    <input type="text" id="card-name" placeholder="JUAN PEREZ">
-
-    <label>Fecha expiración</label>
-    <input type="text" id="card-exp" placeholder="12/30">
-
-    <label>CVV</label>
-    <input type="text" id="card-cvv" placeholder="123">
-
-    <button id="pagar-btn">💳 Pagar Reserva</button>
+    <input id="card-number" placeholder="Número de tarjeta">
+    <input id="card-name" placeholder="Nombre del titular">
+    <input id="card-exp" placeholder="MM/AA">
+    <input id="card-cvv" placeholder="CVV">
+    <button id="pagar-btn">Pagar</button>
     <p id="pago-msg"></p>
   </div>
 </section>
 
-<!-- ================= FOOTER ================= -->
-<footer>
-  &copy; 2025 Sistema de Reservas Hotel
-</footer>
+<footer>&copy; 2025 Sistema de Reservas Hotel</footer>
 
-<!-- ================= MODALES USUARIO ================= -->
+<!-- ================= LOGIN ================= -->
 <div id="login-modal" class="modal">
   <div class="modal-content">
-    <span class="close" onclick="login-modal.style.display='none'">&times;</span>
+    <span class="close" id="close-login">&times;</span>
     <h2>Iniciar Sesión</h2>
+
     <form id="login-form">
-      <input type="email" id="login-email" placeholder="Correo" required>
-      <input type="password" id="login-password" placeholder="Contraseña" required>
-      <button type="submit">Iniciar Sesión</button>
+      <input id="login-email" type="email" placeholder="Correo" required>
+      <input id="login-password" type="password" placeholder="Contraseña" required>
+      <button type="submit">Ingresar</button>
     </form>
+
+    <!-- GOOGLE LOGIN -->
+    <button id="google-login">Continuar con Google</button>
   </div>
 </div>
 
+<!-- ================= REGISTER ================= -->
 <div id="register-modal" class="modal">
   <div class="modal-content">
-    <span class="close" onclick="register-modal.style.display='none'">&times;</span>
+    <span class="close" id="close-register">&times;</span>
     <h2>Registrarse</h2>
+
     <form id="register-form">
-      <input type="text" id="register-name" placeholder="Nombre" required>
-      <input type="email" id="register-email" placeholder="Correo" required>
-      <input type="password" id="register-password" placeholder="Contraseña" required>
+      <input id="register-name" placeholder="Nombre">
+      <input id="register-email" type="email" placeholder="Correo">
+      <input id="register-password" type="password" placeholder="Contraseña">
       <button type="submit">Registrarse</button>
     </form>
+
+    <!-- GOOGLE REGISTER -->
+    <button id="google-register">Registrarse con Google</button>
   </div>
 </div>
 
-<!-- ================= MODAL ADMIN LOGIN ================= -->
+<!-- ================= ADMIN ================= -->
 <div id="admin-modal" class="modal">
   <div class="modal-content">
     <span class="close" id="close-admin">&times;</span>
     <h2>Login Administrador</h2>
 
-    <input type="email" id="admin-email" placeholder="Correo admin">
-    <input type="password" id="admin-password" placeholder="Contraseña admin">
-
+    <input id="admin-email" placeholder="Correo admin">
+    <input id="admin-password" type="password" placeholder="Contraseña">
     <button id="admin-login-btn">Entrar al Dashboard</button>
     <p id="admin-error"></p>
   </div>
 </div>
 
-<!-- ================= MODAL RESERVA ================= -->
+<!-- ================= RESERVA ================= -->
 <div id="reserva-modal" class="modal">
   <div class="modal-content">
     <span class="close" id="close-reserva">&times;</span>
     <h2>Confirmar Reserva</h2>
 
     <p><strong>Hotel:</strong> <span id="reserva-hotel"></span></p>
-    <p><strong>Precio por noche:</strong> $<span id="reserva-precio"></span></p>
+    <p><strong>Precio:</strong> $<span id="reserva-precio"></span></p>
     <p><strong>Entrada:</strong> <span id="reserva-entrada"></span></p>
     <p><strong>Salida:</strong> <span id="reserva-salida"></span></p>
 
-    <button id="confirmar-reserva">Confirmar Reserva</button>
+    <button id="confirmar-reserva">Confirmar</button>
   </div>
 </div>
 
@@ -185,15 +174,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-  flatpickr("#fecha-reserva",{ dateFormat:"Y-m-d" });
-  flatpickr("#fecha-salida",{ dateFormat:"Y-m-d" });
+  flatpickr("#fecha-reserva",{dateFormat:"Y-m-d"});
+  flatpickr("#fecha-salida",{dateFormat:"Y-m-d"});
 
-  // Admin modal
-  document.getElementById("admin-btn").onclick = () =>
-    document.getElementById("admin-modal").style.display = "flex";
+  login-btn.onclick = () => login-modal.style.display = "flex";
+  register-btn.onclick = () => register-modal.style.display = "flex";
+  admin-btn.onclick = () => admin-modal.style.display = "flex";
 
-  document.getElementById("close-admin").onclick = () =>
-    document.getElementById("admin-modal").style.display = "none";
+  close-login.onclick = () => login-modal.style.display = "none";
+  close-register.onclick = () => register-modal.style.display = "none";
+  close-admin.onclick = () => admin-modal.style.display = "none";
+  close-reserva.onclick = () => reserva-modal.style.display = "none";
 </script>
 
 </body>
