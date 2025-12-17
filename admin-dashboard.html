@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -70,5 +71,22 @@
 <script type="module" src="scripts/firebase-config.js"></script>
 <script type="module" src="scripts/admin-auth.js"></script>
 <script type="module" src="scripts/admin.js"></script>
+<script type="module">
+  import { protectAdminDashboard } from "./scripts/admin-auth.js";
+  import { auth } from "./scripts/firebase-config.js";
+  
+  const ADMINS = ["admin@tudominio.com"];
+
+  // PROTECCIÓN DEL DASHBOARD: solo deja entrar al admin
+  protectAdminDashboard();
+
+  // Cerrar sesión del admin
+  document.getElementById("logout-admin").addEventListener("click", () => {
+    auth.signOut().then(() => {
+      window.location.href = "index.html";
+    });
+  });
+</script>
+
 </body>
 </html>
