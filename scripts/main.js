@@ -240,6 +240,15 @@ tabs.forEach(tab => {
 });
 
 
+/* ===============================
+   EVENTOS
+================================ */
+searchBtn.onclick = cargarHoteles;
+closeReserva.onclick = () => (reservaModal.style.display = "none");
+
+
+
+
 import { auth } from "./firebase-config.js";
 import { signInWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
@@ -279,9 +288,3 @@ adminLoginBtn?.addEventListener("click", async () => {
   }
 });
 
-
-/* ===============================
-   EVENTOS
-================================ */
-searchBtn.onclick = cargarHoteles;
-closeReserva.onclick = () => (reservaModal.style.display = "none");
