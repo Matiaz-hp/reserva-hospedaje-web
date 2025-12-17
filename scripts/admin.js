@@ -188,13 +188,6 @@ async function cargarReservas() {
     `;
   }
 
-  document.querySelectorAll("[data-pay]").forEach(btn => {
-    btn.onclick = async () => {
-      await updateDoc(doc(db, "reserva", btn.dataset.pay), { estado: "pagado" });
-      cargarReservas();
-    };
-  });
-
   document.querySelectorAll("[data-del]").forEach(btn => {
     btn.onclick = async () => {
       await deleteDoc(doc(db, "reserva", btn.dataset.del));
