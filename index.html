@@ -215,14 +215,35 @@
 
   // Mostrar usuario normal (no admin) en panel
   auth.onAuthStateChanged((user) => {
-      if (user && !ADMINS.includes(user.email)) {
-          document.getElementById("user-name").textContent = user.email;
-          document.getElementById("logout-btn").style.display = "inline-block";
-      } else {
-          document.getElementById("user-name").textContent = "";
-          document.getElementById("logout-btn").style.display = "none";
-      }
-  });
+    const userName = document.getElementById("user-name");
+    const logoutBtn = document.getElementById("logout-btn");
+    const loginBtn = document.getElementById("login-btn");
+    const registerBtn = document.getElementById("register-btn");
+    const adminBtn = document.getElementById("admin-btn");
+
+    if (user) {
+        if (ADMINS.includes(user.email)) {
+            // Admin: no mostramos nombre ni logout, pero los botones siguen visibles si quieres
+            userName.textContent = "";
+            logoutBtn.style.display = "none";
+        } else {
+            // Usuario normal
+            userName.textContent = user.email;
+            logoutBtn.style.display = "inline-block";
+        }
+        // Siempre ocultar login y registro para usuarios logueados
+        loginBtn.style.display = "none";
+        registerBtn.style.display = "none";
+    } else {
+        // Ningún usuario logueado
+        userName.textContent = "";
+        logoutBtn.style.display = "none";
+        loginBtn.style.display = "inline-block";
+        registerBtn.style.display = "inline-block";
+        adminBtn.style.display = "inline-block";
+    }
+});
+
 </script>
 
 </body>
