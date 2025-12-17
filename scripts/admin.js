@@ -1,4 +1,3 @@
-
 import { auth, db } from "./firebase-config.js";
 import {
   collection,
@@ -11,8 +10,7 @@ import {
   query,
   orderBy
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-import { deleteUser } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 /* ==========================
    ELEMENTOS DEL DOM
@@ -29,11 +27,32 @@ const listaHoteles = document.getElementById("lista-hoteles");
 const hotelMsg = document.getElementById("hotel-msg");
 
 const listaUsuarios = document.getElementById("lista-usuarios");
+const logoutBtn = document.getElementById("logout-admin");
 
-let editHotelId = null; // para saber si estamos editando
+let editHotelId = null; // Para saber si estamos editando un hotel
 
 /* ==========================
-   FUNCIONES CRUD DE HOTELES
+   PROTECCIÓN DEL DASHBOARD
+========================== */
+const ADMINS = ["admin@tudominio.com"];
+
+onAuthStateChanged(auth, user => {
+  if (!user || !ADMINS.includes(user.email)) {
+    alert("No tienes permisos para acceder al Dashboard");
+    window.location.href = "index.html";
+  }
+});
+
+/* ==========================
+   LOGOUT ADMIN
+========================== */
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "index.html";
+});
+
+/* ==========================
+   FUNCIONES CRUD HOTELS
 ========================== */
 async function guardarHotel() {
   const nombre = hotelNombre.value.trim();
@@ -52,7 +71,6 @@ async function guardarHotel() {
 
   try {
     if (editHotelId) {
-      // Editar hotel
       await updateDoc(doc(db, "hoteles", editHotelId), {
         nombre,
         ciudad,
@@ -66,7 +84,6 @@ async function guardarHotel() {
       editHotelId = null;
       guardarBtn.textContent = "Guardar Hotel";
     } else {
-      // Crear nuevo hotel
       await addDoc(collection(db, "hoteles"), {
         nombre,
         ciudad,
@@ -80,7 +97,6 @@ async function guardarHotel() {
       hotelMsg.textContent = "✅ Hotel guardado correctamente";
     }
 
-    // Limpiar formulario
     hotelNombre.value = "";
     hotelCiudad.value = "";
     hotelPrecio.value = "";
@@ -101,6 +117,7 @@ guardarBtn.addEventListener("click", guardarHotel);
    LISTAR HOTELES EN TIEMPO REAL
 ========================== */
 const qHoteles = query(collection(db, "hoteles"), orderBy("createdAt", "desc"));
+
 onSnapshot(qHoteles, (snapshot) => {
   listaHoteles.innerHTML = "";
   snapshot.forEach(docSnap => {
@@ -109,10 +126,10 @@ onSnapshot(qHoteles, (snapshot) => {
     div.className = "hotel-item";
     div.innerHTML = `
       <div class="hotel-info">
-        <img src="${h.imagenUrl}" alt="${h.nombre}">
+        <img src="${h.imagenUrl}" alt="${h.nombre}" style="width:100px;height:60px;object-fit:cover;border-radius:5px;margin-right:10px;">
         <strong>${h.nombre}</strong> – ${h.ciudad} – $${h.precio} – Cap: ${h.capacidad} – ${h.fechaInicio} a ${h.fechaFin}
       </div>
-      <div>
+      <div class="hotel-actions">
         <button class="edit" data-id="${docSnap.id}">Editar</button>
         <button class="delete" data-id="${docSnap.id}">Eliminar</button>
       </div>
@@ -120,12 +137,13 @@ onSnapshot(qHoteles, (snapshot) => {
     listaHoteles.appendChild(div);
   });
 
-  // Eventos botones Editar y Eliminar
+  // Editar hotel
   document.querySelectorAll(".edit").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       const id = e.target.dataset.id;
-      const docSnap = await getDocs(doc(db, "hoteles", id));
-      const hotel = (await doc(db, "hoteles", id).get()).data();
+      const hotelRef = doc(db, "hoteles", id);
+      const hotelSnap = await getDocs(hotelRef);
+      const hotel = (await hotelRef.get()).data();
       hotelNombre.value = hotel.nombre;
       hotelCiudad.value = hotel.ciudad;
       hotelPrecio.value = hotel.precio;
@@ -138,6 +156,7 @@ onSnapshot(qHoteles, (snapshot) => {
     });
   });
 
+  // Eliminar hotel
   document.querySelectorAll(".delete").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       const id = e.target.dataset.id;
@@ -153,36 +172,40 @@ onSnapshot(qHoteles, (snapshot) => {
 /* ==========================
    LISTAR USUARIOS
 ========================== */
-const firebaseAuth = getAuth();
 async function cargarUsuarios() {
-  // NOTA: Firebase Auth no permite obtener todos los usuarios directamente en cliente,
-  // normalmente se requiere Firebase Admin SDK (Node.js) o cloud function
-  // Aquí vamos a simular con Firestore usuarios guardados
-  const snapshot = await getDocs(collection(db, "usuarios"));
-  listaUsuarios.innerHTML = "";
-  snapshot.forEach(docSnap => {
-    const u = docSnap.data();
-    const div = document.createElement("div");
-    div.className = "user-item";
-    div.innerHTML = `
-      <div>${u.nombre || "Sin nombre"} – ${u.email}</div>
-      <div>
-        <button class="delete-user" data-id="${docSnap.id}">Eliminar</button>
-      </div>
-    `;
-    listaUsuarios.appendChild(div);
-  });
+  try {
+    const snapshot = await getDocs(collection(db, "users"));
+    listaUsuarios.innerHTML = "";
 
-  document.querySelectorAll(".delete-user").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
-      const id = e.target.dataset.id;
-      if (confirm("¿Eliminar este usuario?")) {
-        await deleteDoc(doc(db, "usuarios", id));
-        alert("Usuario eliminado de Firestore (Auth no se puede eliminar desde cliente)");
-        cargarUsuarios();
-      }
+    snapshot.forEach(docSnap => {
+      const u = docSnap.data();
+      const div = document.createElement("div");
+      div.className = "user-item";
+      div.innerHTML = `
+        <div><strong>${u.name || "Sin nombre"}</strong> – ${u.email}</div>
+        <div>
+          <button class="delete-user" data-id="${docSnap.id}">Eliminar</button>
+        </div>
+      `;
+      listaUsuarios.appendChild(div);
     });
-  });
+
+    // Botones para eliminar usuario
+    document.querySelectorAll(".delete-user").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const id = e.target.dataset.id;
+        if (confirm("¿Eliminar este usuario?")) {
+          await deleteDoc(doc(db, "users", id));
+          alert("Usuario eliminado de Firestore");
+          cargarUsuarios();
+        }
+      });
+    });
+
+  } catch (err) {
+    listaUsuarios.innerHTML = "❌ Error al cargar usuarios: " + err.message;
+  }
 }
 
 cargarUsuarios();
+
