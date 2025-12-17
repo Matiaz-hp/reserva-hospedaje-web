@@ -6,7 +6,7 @@ import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/
    LISTA DE ADMINS
 ======================= */
 const ADMINS = [
-  "admin@admin.com",   // cambia por tu correo real
+  "admin@tudominio.com",   // cambia por tu correo real
 ];
 
 /* =======================
