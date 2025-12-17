@@ -1,55 +1,107 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Dashboard Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
   <link rel="stylesheet" href="styles/styles.css">
-
+  
   <style>
-    body{
-      background:#f4f6f8;
+    body {
+      background: #f0f2f5;
+      font-family: Arial, sans-serif;
+      margin: 0;
     }
-    .admin-container{
-      max-width:1100px;
-      margin:40px auto;
-      padding:20px;
+    .admin-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
     }
-    .admin-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:30px;
-    }
-    .admin-card{
-      background:#fff;
-      padding:20px;
-      border-radius:10px;
-      margin-bottom:20px;
-    }
-    .admin-card input, .admin-card select{
-      width:100%;
-      margin-bottom:10px;
-      padding:8px;
-    }
-    .admin-card button{
-      padding:8px 16px;
-      margin-right: 5px;
-    }
-    .hotel-item{
-      display:flex;
-      align-items:center;
+    .admin-header {
+      display: flex;
       justify-content: space-between;
-      border-bottom: 1px solid #ddd;
-      padding: 10px 0;
+      align-items: center;
+      margin-bottom: 30px;
     }
-    .hotel-info img{
-      width:80px;
-      height:50px;
-      object-fit:cover;
-      margin-right:10px;
+    .admin-header h2 {
+      color: #333;
+    }
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab-buttons button {
+      padding: 10px 20px;
+      border: none;
+      background: #3498db;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .tab-buttons button.active {
+      background: #2c80b4;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .card input, .card select {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .card button {
+      padding: 10px 16px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .card button.delete {
+      background: #e74c3c;
+    }
+    .card button.edit {
+      background: #f39c12;
+    }
+    .hotel-item, .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .hotel-item img {
+      width: 60px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    .hotel-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .messages {
+      margin-bottom: 10px;
+      color: green;
+    }
+    .error {
+      color: red;
     }
   </style>
 </head>
@@ -62,21 +114,38 @@
     <button id="logout-admin">Cerrar sesión</button>
   </div>
 
-  <!-- GESTIÓN DE HOTELES -->
-  <div class="admin-card">
-    <h3>🏨 Gestionar Hoteles</h3>
-    <input type="text" id="hotel-nombre" placeholder="Nombre del hotel">
-    <input type="text" id="hotel-ciudad" placeholder="Ciudad">
-    <input type="number" id="hotel-precio" placeholder="Precio por noche">
-    <input type="file" id="hotel-imagen" accept="image/*">
-    <button id="guardar-hotel">Guardar Hotel</button>
-    <p id="admin-msg"></p>
+  <div class="tab-buttons">
+    <button class="active" data-tab="hoteles-tab">Gestión de Hoteles</button>
+    <button data-tab="usuarios-tab">Gestión de Usuarios</button>
   </div>
 
-  <!-- LISTA -->
-  <div class="admin-card">
-    <h3>📋 Hoteles registrados</h3>
-    <div id="lista-hoteles"></div>
+  <!-- GESTIÓN DE HOTELES -->
+  <div id="hoteles-tab" class="tab-content active">
+    <div class="card">
+      <h3>Agregar / Editar Hotel</h3>
+      <p class="messages" id="hotel-msg"></p>
+      <input type="text" id="hotel-nombre" placeholder="Nombre del hotel">
+      <input type="text" id="hotel-ciudad" placeholder="Ciudad">
+      <input type="number" id="hotel-precio" placeholder="Precio por noche">
+      <input type="number" id="hotel-capacidad" placeholder="Capacidad de huéspedes">
+      <input type="date" id="hotel-fecha-inicio" placeholder="Fecha inicio">
+      <input type="date" id="hotel-fecha-fin" placeholder="Fecha fin">
+      <input type="text" id="hotel-imagen" placeholder="URL de imagen">
+      <button id="guardar-hotel">Guardar Hotel</button>
+    </div>
+
+    <div class="card">
+      <h3>Hoteles Registrados</h3>
+      <div id="lista-hoteles"></div>
+    </div>
+  </div>
+
+  <!-- GESTIÓN DE USUARIOS -->
+  <div id="usuarios-tab" class="tab-content">
+    <div class="card">
+      <h3>Usuarios Registrados</h3>
+      <div id="lista-usuarios"></div>
+    </div>
   </div>
 
 </div>
@@ -92,13 +161,25 @@
   // PROTECCIÓN DEL DASHBOARD
   protectAdminDashboard();
 
-  // Cerrar sesión del admin
-  document.getElementById("logout-admin").addEventListener("click", () => {
-    auth.signOut().then(() => {
-      window.location.href = "index.html";
+  // Tabs
+  const tabs = document.querySelectorAll('.tab-buttons button');
+  const contents = document.querySelectorAll('.tab-content');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      contents.forEach(c => c.classList.remove('active'));
+      document.getElementById(tab.dataset.tab).classList.add('active');
     });
+  });
+
+  // Logout Admin
+  document.getElementById('logout-admin').addEventListener('click', async () => {
+    await auth.signOut();
+    window.location.href = "index.html";
   });
 </script>
 
 </body>
 </html>
+
