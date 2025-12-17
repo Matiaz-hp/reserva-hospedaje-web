@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="styles/styles.css">
+
+  <style>
+    body{
+      background:#f4f6f8;
+    }
+    .admin-container{
+      max-width:1100px;
+      margin:40px auto;
+      padding:20px;
+    }
+    .admin-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:30px;
+    }
+    .admin-card{
+      background:#fff;
+      padding:20px;
+      border-radius:10px;
+      margin-bottom:20px;
+    }
+    .admin-card input{
+      width:100%;
+      margin-bottom:10px;
+      padding:8px;
+    }
+    .admin-card button{
+      padding:8px 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-container">
+
+  <div class="admin-header">
+    <h2>📊 Panel Administrador</h2>
+    <button id="logout-admin">Cerrar sesión</button>
+  </div>
+
+  <!-- GESTIÓN DE HOTELES -->
+  <div class="admin-card">
+    <h3>🏨 Gestionar Hoteles</h3>
+
+    <input type="text" id="hotel-nombre" placeholder="Nombre del hotel">
+    <input type="text" id="hotel-ciudad" placeholder="Ciudad">
+    <input type="number" id="hotel-precio" placeholder="Precio por noche">
+
+    <button id="guardar-hotel">Guardar Hotel</button>
+    <p id="admin-msg"></p>
+  </div>
+
+  <!-- LISTA -->
+  <div class="admin-card">
+    <h3>📋 Hoteles registrados</h3>
+    <div id="lista-hoteles"></div>
+  </div>
+
+</div>
+
+<script type="module" src="scripts/firebase-config.js"></script>
+<script type="module" src="scripts/admin.js"></script>
+
+</body>
+</html>
