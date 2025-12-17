@@ -5,7 +5,8 @@ import {
   addDoc,
   deleteDoc,
   updateDoc,
-  doc
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 /* =====================
@@ -70,7 +71,7 @@ async function cargarHoteles() {
           <img src="${h.imagen || 'https://via.placeholder.com/60'}">
           <div>
             <strong>${h.nombre}</strong><br>
-            ${h.ciudad} – $${h.precio}
+            ${h.ciudad} – <b>S/. ${h.precio}</b>
           </div>
         </div>
         <div>
@@ -81,7 +82,6 @@ async function cargarHoteles() {
     `;
   });
 
-  // Eventos
   document.querySelectorAll(".edit").forEach(btn => {
     btn.onclick = () => editarHotel(btn.dataset.id);
   });
@@ -147,21 +147,35 @@ async function cargarUsuarios() {
 }
 
 /* =====================
-   LISTAR RESERVAS
+   LISTAR RESERVAS (✔ USUARIO REAL)
 ===================== */
 async function cargarReservas() {
   listaReservas.innerHTML = "";
   const snapshot = await getDocs(collection(db, "reserva"));
 
-  snapshot.forEach(d => {
+  for (const d of snapshot.docs) {
     const r = d.data();
+
+    let userName = "Usuario desconocido";
+    let userEmail = "";
+
+    if (r.userId) {
+      const userSnap = await getDoc(doc(db, "users", r.userId));
+      if (userSnap.exists()) {
+        const u = userSnap.data();
+        userName = u.name;
+        userEmail = u.email;
+      }
+    }
+
     listaReservas.innerHTML += `
       <div class="reserva-item">
         <div class="reserva-info">
           <img src="${r.imagen || 'https://via.placeholder.com/60'}">
           <div>
             <strong>${r.hotel}</strong><br>
-            Usuario: ${r.userEmail}<br>
+            Usuario: <b>${userName}</b><br>
+            ${userEmail ? `Email: ${userEmail}<br>` : ""}
             ${r.fechaEntrada} → ${r.fechaSalida}<br>
             Estado: <b>${r.estado}</b>
           </div>
@@ -172,7 +186,7 @@ async function cargarReservas() {
         <button class="btn-small delete" data-del="${d.id}">Eliminar</button>
       </div>
     `;
-  });
+  }
 
   document.querySelectorAll("[data-pay]").forEach(btn => {
     btn.onclick = async () => {
