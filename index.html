@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="styles/styles.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-  <!-- SOLO PARA CENTRAR MODALES -->
+  <!-- SOLO PARA MODALES (centrado y overlay) -->
   <style>
     .modal{
       position: fixed;
@@ -72,6 +72,24 @@
       <label>Fecha de salida</label>
       <input type="text" id="fecha-salida">
     </div>
+    <div class="field">
+      <label>Tipo de habitación</label>
+      <select id="tipo-habitacion">
+        <option>Todas</option>
+        <option>Simple</option>
+        <option>Doble</option>
+        <option>Matrimonial</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Huéspedes</label>
+      <select id="huespedes">
+        <option>1 persona</option>
+        <option>2 personas</option>
+        <option>3 personas</option>
+        <option>4 personas</option>
+      </select>
+    </div>
   </div>
 
   <p id="error-fechas" style="display:none;color:#c0392b;"></p>
@@ -90,7 +108,6 @@
 
 <section id="pagos" style="display:none;">
   <h2 class="section-title">Pagos</h2>
-
   <div class="search-card">
     <h3>Pago de Reserva</h3>
     <input id="card-number" placeholder="4111 1111 1111 1111">
@@ -116,7 +133,6 @@
       <button type="submit">Iniciar Sesión</button>
     </form>
 
-    <!-- GOOGLE LOGIN -->
     <button id="google-login">Continuar con Google</button>
   </div>
 </div>
@@ -134,7 +150,6 @@
       <button type="submit">Registrarse</button>
     </form>
 
-    <!-- GOOGLE REGISTER -->
     <button id="google-register">Registrarse con Google</button>
   </div>
 </div>
@@ -144,7 +159,6 @@
   <div class="modal-content">
     <span class="close" id="close-admin">&times;</span>
     <h2>Login Administrador</h2>
-
     <input type="email" id="admin-email" placeholder="Correo admin">
     <input type="password" id="admin-password" placeholder="Contraseña admin">
     <button id="admin-login-btn">Entrar al Dashboard</button>
@@ -157,12 +171,10 @@
   <div class="modal-content">
     <span class="close" id="close-reserva">&times;</span>
     <h2>Confirmar Reserva</h2>
-
     <p><strong>Hotel:</strong> <span id="reserva-hotel"></span></p>
-    <p><strong>Precio por noche:</strong> $<span id="reserva-precio"></span></p>
+    <p><strong>Precio:</strong> $<span id="reserva-precio"></span></p>
     <p><strong>Entrada:</strong> <span id="reserva-entrada"></span></p>
     <p><strong>Salida:</strong> <span id="reserva-salida"></span></p>
-
     <button id="confirmar-reserva">Confirmar Reserva</button>
   </div>
 </div>
@@ -177,12 +189,10 @@
   flatpickr("#fecha-reserva",{dateFormat:"Y-m-d"});
   flatpickr("#fecha-salida",{dateFormat:"Y-m-d"});
 
-  // abrir modales
   login-btn.onclick = () => login-modal.style.display = "flex";
   register-btn.onclick = () => register-modal.style.display = "flex";
   admin-btn.onclick = () => admin-modal.style.display = "flex";
 
-  // cerrar modales
   close-login.onclick = () => login-modal.style.display = "none";
   close-register.onclick = () => register-modal.style.display = "none";
   close-admin.onclick = () => admin-modal.style.display = "none";
