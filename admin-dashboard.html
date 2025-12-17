@@ -199,19 +199,20 @@
   </div>
 
 </div>
-
 <script type="module" src="scripts/firebase-config.js"></script>
 <script type="module" src="scripts/admin-auth.js"></script>
+<script type="module" src="scripts/admin.js"></script>
+
 <script type="module">
-  import { auth, db } from "./scripts/firebase-config.js";
-  import { collection, getDocs, updateDoc, doc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
   import { protectAdminDashboard } from "./scripts/admin-auth.js";
+  import { auth } from "./scripts/firebase-config.js";
 
   protectAdminDashboard();
 
-  // Tabs
+  // Tabs (esto SÍ se queda)
   const tabs = document.querySelectorAll('.tab-buttons button');
   const contents = document.querySelectorAll('.tab-content');
+
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
@@ -226,61 +227,9 @@
     await auth.signOut();
     window.location.href = "index.html";
   });
-
-  // ----------------------
-  // Cargar reservas de usuarios
-  // ----------------------
-  async function cargarReservas(){
-    const lista = document.getElementById("lista-reservas");
-    lista.innerHTML = "";
-    const q = query(collection(db,"reserva"));
-    const snapshot = await getDocs(q);
-    if(snapshot.empty){
-      lista.innerHTML = "<p>No hay reservas.</p>";
-      return;
-    }
-    snapshot.forEach(docSnap=>{
-      const r = docSnap.data();
-      lista.innerHTML += `
-        <div class="reserva-item">
-          <div class="reserva-info">
-            <img src="https://via.placeholder.com/60x40" alt="hotel">
-            <div>
-              <strong>Usuario:</strong> ${r.userId}<br>
-              <strong>Hotel:</strong> ${r.hotel}<br>
-              <strong>Entrada:</strong> ${r.fechaEntrada}<br>
-              <strong>Salida:</strong> ${r.fechaSalida}<br>
-              <strong>Habitaciones:</strong> ${r.habitaciones}<br>
-              <strong>Huéspedes:</strong> ${r.huespedes}<br>
-              <strong>Estado:</strong> ${r.estado}
-            </div>
-          </div>
-          ${r.estado==="pendiente" ? `<button class="btn-small" data-id="${docSnap.id}" data-action="pagar">Marcar como pagado</button>` : ''}
-          <button class="btn-small delete" data-id="${docSnap.id}" data-action="cancelar">Cancelar</button>
-        </div>
-      `;
-    });
-
-    // Botones
-    document.querySelectorAll('[data-action="pagar"]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const id = btn.dataset.id;
-        await updateDoc(doc(db,"reserva",id),{estado:"pagado"});
-        cargarReservas();
-      });
-    });
-    document.querySelectorAll('[data-action="cancelar"]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const id = btn.dataset.id;
-        await deleteDoc(doc(db,"reserva",id));
-        cargarReservas();
-      });
-    });
-  }
-
-  // Cargar reservas al iniciar
-  cargarReservas();
 </script>
+
+
 
 </body>
 </html>
