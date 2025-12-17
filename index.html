@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="styles/styles.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-  <!-- SOLO PARA MODALES (centrado y overlay) -->
   <style>
     .modal{
       position: fixed;
@@ -38,10 +37,8 @@
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
 <header class="topbar">
   <div class="logo">🏨 Sistema de Reservas Hotel</div>
-
   <div class="auth">
     <span id="user-name"></span>
     <button id="login-btn">Iniciar Sesión</button>
@@ -51,26 +48,23 @@
   </div>
 </header>
 
-<!-- ================= TABS USUARIO ================= -->
 <nav class="tabs">
   <button class="tab active" data-tab="reservar">Reservar</button>
   <button class="tab" data-tab="mis-reservas">Mis Reservas</button>
   <button class="tab" data-tab="pagos">Pagos</button>
 </nav>
 
-<!-- ================= RESERVAR ================= -->
 <section class="search-card" id="reservar">
   <h2>Buscar Habitaciones Disponibles</h2>
-  <p>Encuentra la habitación perfecta para tu estadía</p>
 
   <div class="search-grid">
     <div class="field">
       <label>Fecha de entrada</label>
-      <input type="text" id="fecha-reserva">
+      <input type="text" id="fecha-reserva" readonly>
     </div>
     <div class="field">
       <label>Fecha de salida</label>
-      <input type="text" id="fecha-salida">
+      <input type="text" id="fecha-salida" readonly>
     </div>
     <div class="field">
       <label>Tipo de habitación</label>
@@ -109,11 +103,10 @@
 <section id="pagos" style="display:none;">
   <h2 class="section-title">Pagos</h2>
   <div class="search-card">
-    <h3>Pago de Reserva</h3>
-    <input id="card-number" placeholder="4111 1111 1111 1111">
-    <input id="card-name" placeholder="JUAN PEREZ">
-    <input id="card-exp" placeholder="12/30">
-    <input id="card-cvv" placeholder="123">
+    <input id="card-number">
+    <input id="card-name">
+    <input id="card-exp">
+    <input id="card-cvv">
     <button id="pagar-btn">💳 Pagar Reserva</button>
     <p id="pago-msg"></p>
   </div>
@@ -121,82 +114,71 @@
 
 <footer>&copy; 2025 Sistema de Reservas Hotel</footer>
 
-<!-- ================= LOGIN ================= -->
 <div id="login-modal" class="modal">
   <div class="modal-content">
     <span class="close" id="close-login">&times;</span>
-    <h2>Iniciar Sesión</h2>
-
     <form id="login-form">
-      <input type="email" id="login-email" placeholder="Correo" required>
-      <input type="password" id="login-password" placeholder="Contraseña" required>
+      <input type="email" id="login-email">
+      <input type="password" id="login-password">
       <button type="submit">Iniciar Sesión</button>
     </form>
-
     <button id="google-login">Continuar con Google</button>
   </div>
 </div>
 
-<!-- ================= REGISTER ================= -->
 <div id="register-modal" class="modal">
   <div class="modal-content">
     <span class="close" id="close-register">&times;</span>
-    <h2>Registrarse</h2>
-
     <form id="register-form">
-      <input type="text" id="register-name" placeholder="Nombre" required>
-      <input type="email" id="register-email" placeholder="Correo" required>
-      <input type="password" id="register-password" placeholder="Contraseña" required>
-      <button type="submit">Registrarse</button>
+      <input id="register-name">
+      <input id="register-email">
+      <input id="register-password">
+      <button>Registrarse</button>
     </form>
-
     <button id="google-register">Registrarse con Google</button>
   </div>
 </div>
 
-<!-- ================= ADMIN ================= -->
 <div id="admin-modal" class="modal">
   <div class="modal-content">
     <span class="close" id="close-admin">&times;</span>
-    <h2>Login Administrador</h2>
-    <input type="email" id="admin-email" placeholder="Correo admin">
-    <input type="password" id="admin-password" placeholder="Contraseña admin">
+    <input id="admin-email">
+    <input id="admin-password">
     <button id="admin-login-btn">Entrar al Dashboard</button>
-    <p id="admin-error"></p>
   </div>
 </div>
 
-<!-- ================= RESERVA ================= -->
 <div id="reserva-modal" class="modal">
   <div class="modal-content">
     <span class="close" id="close-reserva">&times;</span>
-    <h2>Confirmar Reserva</h2>
-    <p><strong>Hotel:</strong> <span id="reserva-hotel"></span></p>
-    <p><strong>Precio:</strong> $<span id="reserva-precio"></span></p>
-    <p><strong>Entrada:</strong> <span id="reserva-entrada"></span></p>
-    <p><strong>Salida:</strong> <span id="reserva-salida"></span></p>
-    <button id="confirmar-reserva">Confirmar Reserva</button>
+    <button id="confirmar-reserva">Confirmar</button>
   </div>
 </div>
 
-<!-- ================= SCRIPTS ================= -->
 <script type="module" src="scripts/firebase-config.js"></script>
 <script type="module" src="scripts/auth.js"></script>
 <script type="module" src="scripts/main.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-  flatpickr("#fecha-reserva",{dateFormat:"Y-m-d"});
-  flatpickr("#fecha-salida",{dateFormat:"Y-m-d"});
+  flatpickr("#fecha-reserva",{dateFormat:"Y-m-d",allowInput:false});
+  flatpickr("#fecha-salida",{dateFormat:"Y-m-d",allowInput:false});
 
-  login-btn.onclick = () => login-modal.style.display = "flex";
-  register-btn.onclick = () => register-modal.style.display = "flex";
-  admin-btn.onclick = () => admin-modal.style.display = "flex";
+  document.getElementById("login-btn").onclick = () =>
+    document.getElementById("login-modal").style.display="flex";
+  document.getElementById("register-btn").onclick = () =>
+    document.getElementById("register-modal").style.display="flex";
+  document.getElementById("admin-btn").onclick = () =>
+    document.getElementById("admin-modal").style.display="flex";
 
-  close-login.onclick = () => login-modal.style.display = "none";
-  close-register.onclick = () => register-modal.style.display = "none";
-  close-admin.onclick = () => admin-modal.style.display = "none";
-  close-reserva.onclick = () => reserva-modal.style.display = "none";
+  document.getElementById("close-login").onclick = () =>
+    document.getElementById("login-modal").style.display="none";
+  document.getElementById("close-register").onclick = () =>
+    document.getElementById("register-modal").style.display="none";
+  document.getElementById("close-admin").onclick = () =>
+    document.getElementById("admin-modal").style.display="none";
+  document.getElementById("close-reserva").onclick = () =>
+    document.getElementById("reserva-modal").style.display="none";
 </script>
 
 </body>
