@@ -223,17 +223,20 @@
 
     if (user) {
         if (ADMINS.includes(user.email)) {
-            // Admin: no mostramos nombre ni logout, pero los botones siguen visibles si quieres
-            userName.textContent = "";
-            logoutBtn.style.display = "none";
+            // Admin logueado
+            userName.textContent = "";          // No mostrar correo
+            logoutBtn.style.display = "none";   // No mostrar logout
+            loginBtn.style.display = "inline-block";   // Mostrar login si quieres
+            registerBtn.style.display = "inline-block"; // Mostrar registro si quieres
+            adminBtn.style.display = "inline-block"; // Mantener botón admin visible
         } else {
-            // Usuario normal
+            // Usuario normal logueado
             userName.textContent = user.email;
             logoutBtn.style.display = "inline-block";
+            loginBtn.style.display = "none";
+            registerBtn.style.display = "none";
+            adminBtn.style.display = "inline-block"; // siempre mostrar admin
         }
-        // Siempre ocultar login y registro para usuarios logueados
-        loginBtn.style.display = "none";
-        registerBtn.style.display = "none";
     } else {
         // Ningún usuario logueado
         userName.textContent = "";
