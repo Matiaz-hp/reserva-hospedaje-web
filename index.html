@@ -1,74 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Reservas Hotel</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sistema de Reservas Hotel</title>
 
-  <link rel="stylesheet" href="styles/styles.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="styles/styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-  <style>
-    .modal{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
-    .modal-content{
-      background:#fff;
-      padding:25px;
-      border-radius:10px;
-      max-width:420px;
-      width:100%;
-      position:relative;
-    }
-    .close{
-      position:absolute;
-      top:10px;
-      right:15px;
-      font-size:22px;
-      cursor:pointer;
-    }
-    .reserva-item{
-      border:1px solid #ccc;
-      border-radius:8px;
-      padding:12px;
-      margin-bottom:10px;
-      background:#fdfdfd;
-    }
-    .hotel-card{
-      border:1px solid #ccc;
-      border-radius:8px;
-      padding:12px;
-      margin-bottom:12px;
-      display:flex;
-      gap:10px;
-      background:#fff;
-      align-items:center;
-    }
-    .hotel-card img{
-      width:120px;
-      height:80px;
-      object-fit:cover;
-      border-radius:6px;
-    }
-    .hotel-info{
-      flex:1;
-    }
-    .hotel-info strong{display:block;}
-    .hotel-btn{
-      background:#3498db;
-      color:#fff;
-      border:none;
-      padding:6px 12px;
-      border-radius:6px;
-      cursor:pointer;
-    }
-  </style>
+<style>
+.modal{position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; justify-content: center; align-items: center; z-index: 999;}
+.modal-content{background:#fff; padding:25px; border-radius:10px; max-width:420px; width:100%; position:relative;}
+.close{position:absolute; top:10px; right:15px; font-size:22px; cursor:pointer;}
+.reserva-item{border:1px solid #ccc; border-radius:8px; padding:12px; margin-bottom:10px; background:#fdfdfd;}
+.hotel-card{border:1px solid #ccc; border-radius:8px; padding:12px; margin-bottom:12px; display:flex; gap:10px; background:#fff; align-items:center;}
+.hotel-card img{width:120px; height:80px; object-fit:cover; border-radius:6px;}
+.hotel-info{flex:1;}
+.hotel-info strong{display:block;}
+.hotel-btn{background:#3498db; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;}
+</style>
 </head>
 <body>
 
@@ -118,6 +68,10 @@
         <option>4 personas</option>
       </select>
     </div>
+    <div class="field">
+      <label>Buscar por nombre o ciudad</label>
+      <input type="text" id="buscar-hotel" placeholder="Nombre o ciudad">
+    </div>
   </div>
   <p id="error-fechas" style="display:none;color:#c0392b;"></p>
   <button id="search-btn" class="search-btn">🔍 Buscar Habitaciones</button>
@@ -140,70 +94,17 @@
 
 <footer>&copy; 2025 Sistema de Reservas Hotel</footer>
 
-<!-- Modales -->
-<div id="login-modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="close-login">&times;</span>
-    <form id="login-form">
-      <input type="email" id="login-email" placeholder="Correo">
-      <input type="password" id="login-password" placeholder="Contraseña">
-      <button type="submit">Iniciar Sesión</button>
-    </form>
-    <button id="google-login">Continuar con Google</button>
-  </div>
-</div>
+<!-- Modales (sin cambios para reserva y pago) -->
+<div id="login-modal" class="modal"><div class="modal-content"><span class="close" id="close-login">&times;</span><form id="login-form"><input type="email" id="login-email" placeholder="Correo"><input type="password" id="login-password" placeholder="Contraseña"><button type="submit">Iniciar Sesión</button></form><button id="google-login">Continuar con Google</button></div></div>
 
-<div id="register-modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="close-register">&times;</span>
-    <form id="register-form">
-      <input id="register-name" placeholder="Nombre">
-      <input id="register-email" placeholder="Correo">
-      <input id="register-password" placeholder="Contraseña">
-      <button>Registrarse</button>
-    </form>
-  </div>
-</div>
+<div id="register-modal" class="modal"><div class="modal-content"><span class="close" id="close-register">&times;</span><form id="register-form"><input id="register-name" placeholder="Nombre"><input id="register-email" placeholder="Correo"><input id="register-password" placeholder="Contraseña"><button>Registrarse</button></form></div></div>
 
-<div id="admin-modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="close-admin">&times;</span>
-    <input type="email" id="admin-email" placeholder="Correo Admin">
-    <input type="password" id="admin-password" placeholder="Contraseña">
-    <button id="admin-login-btn" type="button">Entrar al Dashboard</button>
-  </div>
-</div>
+<div id="admin-modal" class="modal"><div class="modal-content"><span class="close" id="close-admin">&times;</span><input type="email" id="admin-email" placeholder="Correo Admin"><input type="password" id="admin-password" placeholder="Contraseña"><button id="admin-login-btn" type="button">Entrar al Dashboard</button></div></div>
 
-<div id="reserva-modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="close-reserva">&times;</span>
-    <h3 id="reserva-hotel-name"></h3>
-    <label>Habitaciones</label>
-    <input type="number" id="reserva-cant" value="1" min="1">
-    <label>Huéspedes</label>
-    <input type="number" id="reserva-huespedes" value="1" min="1">
-    <label>Fecha de entrada</label>
-    <input type="text" id="reserva-fecha-entrada" readonly>
-    <label>Fecha de salida</label>
-    <input type="text" id="reserva-fecha-salida" readonly>
-    <button id="confirmar-reserva">Confirmar Reserva</button>
-  </div>
-</div>
+<div id="reserva-modal" class="modal"><div class="modal-content"><span class="close" id="close-reserva">&times;</span><h3 id="reserva-hotel-name"></h3><label>Habitaciones</label><input type="number" id="reserva-cant" value="1" min="1"><label>Huéspedes</label><input type="number" id="reserva-huespedes" value="1" min="1"><label>Fecha de entrada</label><input type="text" id="reserva-fecha-entrada" readonly><label>Fecha de salida</label><input type="text" id="reserva-fecha-salida" readonly><button id="confirmar-reserva">Confirmar Reserva</button></div></div>
 
-<div id="pago-modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="close-pago">&times;</span>
-    <h3 id="pago-hotel-name"></h3>
-    <p>Ingrese los datos de la tarjeta</p>
-    <input type="text" id="card-number" placeholder="Número de tarjeta">
-    <input type="text" id="card-name" placeholder="Nombre del titular">
-    <input type="text" id="card-exp" placeholder="MM/AA">
-    <input type="text" id="card-cvv" placeholder="CVV">
-    <button id="pagar-reserva-btn">💳 Pagar Reserva</button>
-  </div>
-</div>
+<div id="pago-modal" class="modal"><div class="modal-content"><span class="close" id="close-pago">&times;</span><h3 id="pago-hotel-name"></h3><p>Ingrese los datos de la tarjeta</p><input type="text" id="card-number" placeholder="Número de tarjeta"><input type="text" id="card-name" placeholder="Nombre del titular"><input type="text" id="card-exp" placeholder="MM/AA"><input type="text" id="card-cvv" placeholder="CVV"><button id="pagar-reserva-btn">💳 Pagar Reserva</button></div></div>
 
-<!-- Scripts -->
 <script type="module" src="scripts/firebase-config.js"></script>
 <script type="module" src="scripts/auth.js"></script>
 <script type="module" src="scripts/admin-auth.js"></script>
@@ -222,7 +123,7 @@ flatpickr("#fecha-salida",{dateFormat:"Y-m-d",allowInput:false});
 flatpickr("#reserva-fecha-entrada",{dateFormat:"Y-m-d",allowInput:false});
 flatpickr("#reserva-fecha-salida",{dateFormat:"Y-m-d",allowInput:false});
 
-// Abrir modales
+// Abrir y cerrar modales
 document.getElementById("login-btn").onclick = ()=> document.getElementById("login-modal").style.display="flex";
 document.getElementById("register-btn").onclick = ()=> document.getElementById("register-modal").style.display="flex";
 document.getElementById("admin-btn").onclick = ()=> document.getElementById("admin-modal").style.display="flex";
@@ -232,7 +133,7 @@ document.getElementById("close-admin").onclick = ()=> document.getElementById("a
 document.getElementById("close-reserva").onclick = ()=> document.getElementById("reserva-modal").style.display="none";
 document.getElementById("close-pago").onclick = ()=> document.getElementById("pago-modal").style.display="none";
 
-// Login Admin
+// Admin login
 document.getElementById("admin-login-btn")?.addEventListener("click", () => {
   const email = document.getElementById("admin-email").value;
   const password = document.getElementById("admin-password").value;
@@ -259,7 +160,7 @@ auth.onAuthStateChanged(async (user)=>{
       logoutBtn.style.display="inline-block";
       loginBtn.style.display="none";
       registerBtn.style.display="none";
-      adminBtn.style.display="inline-block";
+      adminBtn.style.display="none"; // desaparece admin
       cargarHoteles();
       cargarMisReservas(user.uid);
       cargarPagos(user.uid);
@@ -293,16 +194,34 @@ tabs.forEach(tab=>{
 });
 
 // ----------------------
-// Cargar hoteles
-// ----------------------
+// Cargar hoteles (reservar)
+let HOTELS_CACHE = [];
 async function cargarHoteles(){
   const hotelesList = document.getElementById("hoteles-list");
   hotelesList.innerHTML="";
   const snapshot = await getDocs(collection(db,"hoteles"));
-  snapshot.forEach(doc=>{
-    const h = doc.data();
+  HOTELS_CACHE = snapshot.docs.map(doc=>({id: doc.id, ...doc.data()}));
+
+  // Filtrado
+  const filtro = document.getElementById("buscar-hotel").value.toLowerCase();
+  const tipoFiltro = document.getElementById("tipo-habitacion").value;
+  const fechaEntrada = document.getElementById("fecha-reserva").value;
+  const fechaSalida = document.getElementById("fecha-salida").value;
+
+  const filtered = HOTELS_CACHE.filter(h=>{
+    const matchesNameCity = h.nombre.toLowerCase().includes(filtro) || h.ciudad.toLowerCase().includes(filtro);
+    const matchesType = tipoFiltro==="Todas" ? true : h.tipo===tipoFiltro;
+    return matchesNameCity && matchesType;
+  });
+
+  if(filtered.length===0){
+    hotelesList.innerHTML="<p>No se encontraron hoteles.</p>";
+    return;
+  }
+
+  filtered.forEach(h=>{
     hotelesList.innerHTML += `
-      <div class="hotel-card" data-id="${doc.id}">
+      <div class="hotel-card" data-id="${h.id}">
         <img src="${h.imagen || 'https://via.placeholder.com/120x80'}" alt="${h.nombre}">
         <div class="hotel-info">
           <strong>${h.nombre}</strong>
@@ -338,9 +257,11 @@ async function cargarHoteles(){
   });
 }
 
+// Buscar botón
+document.getElementById("search-btn").addEventListener("click", cargarHoteles);
+
 // ----------------------
 // Confirmar reserva
-// ----------------------
 async function confirmarReserva(uid, hotel, fechaEntrada, fechaSalida){
   const cant = Number(document.getElementById("reserva-cant").value);
   const huespedes = Number(document.getElementById("reserva-huespedes").value);
@@ -362,7 +283,6 @@ async function confirmarReserva(uid, hotel, fechaEntrada, fechaSalida){
 
 // ----------------------
 // Mis reservas usuario
-// ----------------------
 async function cargarMisReservas(uid){
   const reservasList = document.getElementById("reservas-list");
   reservasList.innerHTML="";
@@ -387,7 +307,6 @@ async function cargarMisReservas(uid){
 
 // ----------------------
 // Pagos usuario
-// ----------------------
 async function cargarPagos(uid){
   const pagosList = document.getElementById("pagos-list");
   pagosList.innerHTML="";
@@ -418,6 +337,15 @@ async function cargarPagos(uid){
       document.getElementById("pago-hotel-name").textContent=hotel;
       document.getElementById("pago-modal").style.display="flex";
       document.getElementById("pagar-reserva-btn").onclick = async ()=>{
+        // Simulación tarjeta, cualquier valor es válido
+        const cardNumber = document.getElementById("card-number").value;
+        const cardName = document.getElementById("card-name").value;
+        const cardExp = document.getElementById("card-exp").value;
+        const cardCvv = document.getElementById("card-cvv").value;
+        if(!cardNumber || !cardName || !cardExp || !cardCvv){
+          alert("Completa todos los datos de la tarjeta");
+          return;
+        }
         await updateDoc(doc(db,"reserva",id),{estado:"pagado"});
         document.getElementById("pago-modal").style.display="none";
         cargarPagos(auth.currentUser.uid);
