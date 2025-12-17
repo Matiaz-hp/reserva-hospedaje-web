@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -179,6 +180,9 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script type="module">
   import { loginAdmin } from "./scripts/admin-auth.js";
+  import { auth } from "./scripts/firebase-config.js";
+
+  const ADMINS = ["admin@tudominio.com"];
 
   // Inicializar Flatpickr
   flatpickr("#fecha-reserva",{dateFormat:"Y-m-d",allowInput:false});
@@ -208,8 +212,18 @@
     const password = document.getElementById("admin-password").value;
     loginAdmin(email, password);
   });
+
+  // Mostrar usuario normal (no admin) en panel
+  auth.onAuthStateChanged((user) => {
+      if (user && !ADMINS.includes(user.email)) {
+          document.getElementById("user-name").textContent = user.email;
+          document.getElementById("logout-btn").style.display = "inline-block";
+      } else {
+          document.getElementById("user-name").textContent = "";
+          document.getElementById("logout-btn").style.display = "none";
+      }
+  });
 </script>
 
 </body>
 </html>
-
