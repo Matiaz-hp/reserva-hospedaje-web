@@ -6,8 +6,10 @@ const loginBtn = document.getElementById('login-btn');
 const registerBtn = document.getElementById('register-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const userName = document.getElementById('user-name');
+const adminBtn = document.getElementById('admin-btn');
 const googleLogin = document.getElementById('google-login');
 const googleRegister = document.getElementById('google-register');
+
 
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
@@ -71,7 +73,26 @@ googleRegister?.addEventListener('click', async ()=>{
 logoutBtn?.addEventListener('click', async ()=>{await signOut(auth);});
 
 // Estado del usuario
-onAuthStateChanged(auth,user=>{
-  if(user){ userName.textContent = user.displayName || user.email; logoutBtn.style.display='inline-block'; loginBtn.style.display='none'; registerBtn.style.display='none'; }
-  else{ userName.textContent=''; logoutBtn.style.display='none'; loginBtn.style.display='inline-block'; registerBtn.style.display='inline-block'; }
+onAuthStateChanged(auth, user => {
+  if (user) {
+    userName.textContent = user.displayName || user.email;
+
+    logoutBtn.style.display = 'inline-block';
+    loginBtn.style.display = 'none';
+    registerBtn.style.display = 'none';
+
+    // 👇 OCULTAR ADMIN PARA USUARIOS LOGUEADOS NORMALES
+    adminBtn.style.display = 'none';
+
+  } else {
+    userName.textContent = '';
+
+    logoutBtn.style.display = 'none';
+    loginBtn.style.display = 'inline-block';
+    registerBtn.style.display = 'inline-block';
+
+    // 👇 ADMIN VISIBLE SOLO CUANDO NO HAY SESIÓN
+    adminBtn.style.display = 'inline-block';
+  }
 });
+
