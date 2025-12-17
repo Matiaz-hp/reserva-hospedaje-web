@@ -9,17 +9,13 @@ import {
   doc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-import {
-  getAuth,
-  signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 const auth = getAuth();
-const ADMIN_EMAIL = "admin@admin.com"; // 👈 TU CORREO ADMIN
 
-// ===============================
-// VARIABLES DOM
-// ===============================
+/* ===============================
+   DOM
+================================ */
 const fechaEntrada = document.getElementById("fecha-reserva");
 const fechaSalida = document.getElementById("fecha-salida");
 const searchBtn = document.getElementById("search-btn");
@@ -27,30 +23,32 @@ const hotelesList = document.getElementById("hoteles-list");
 const reservasList = document.getElementById("reservas-list");
 
 const tabs = document.querySelectorAll(".tab");
-const searchSection = document.querySelector(".search-card");
+
+const reservarSection = document.getElementById("reservar");
 const hotelesSection = document.getElementById("hoteles");
 const reservasSection = document.getElementById("mis-reservas");
 const pagosSection = document.getElementById("pagos");
 
-// ADMIN
-const adminLoginSection = document.getElementById("admin-login");
-const adminPanelSection = document.getElementById("admin-panel");
-const adminForm = document.getElementById("admin-login-form");
-const hotelSelect = document.getElementById("hotel-select");
-const nuevoPrecioInput = document.getElementById("nuevo-precio");
-const guardarPrecioBtn = document.getElementById("guardar-precio-btn");
-const loginError = document.getElementById("login-error");
-
-// MODAL RESERVA
 const reservaModal = document.getElementById("reserva-modal");
 const confirmarBtn = document.getElementById("confirmar-reserva");
 const closeReserva = document.getElementById("close-reserva");
 
-let reservaActual = null;
+const pagarBtn = document.getElementById("pagar-btn");
+const pagoMsg = document.getElementById("pago-msg");
 
-// ===============================
-// VALIDAR FECHAS
-// ===============================
+let reservaActual = null;
+let reservaPendientePago = null;
+
+/* ===============================
+   UTILIDADES
+================================ */
+function ocultarTodo() {
+  reservarSection.style.display = "none";
+  hotelesSection.style.display = "none";
+  reservasSection.style.display = "none";
+  pagosSection.style.display = "none";
+}
+
 function validarFechas(entrada, salida) {
   const error = document.getElementById("error-fechas");
 
@@ -61,7 +59,7 @@ function validarFechas(entrada, salida) {
   }
 
   if (new Date(salida) <= new Date(entrada)) {
-    error.textContent = "⚠️ La fecha de salida debe ser mayor.";
+    error.textContent = "⚠️ La fecha de salida debe ser mayor a la de entrada.";
     error.style.display = "block";
     return false;
   }
@@ -74,15 +72,15 @@ function calcularNoches(entrada, salida) {
   return (new Date(salida) - new Date(entrada)) / (1000 * 60 * 60 * 24);
 }
 
-// ===============================
-// DISPONIBILIDAD
-// ===============================
+/* ===============================
+   DISPONIBILIDAD
+================================ */
 async function hotelDisponible(hotelId, entrada, salida) {
   const q = query(collection(db, "reservas"), where("hotelId", "==", hotelId));
   const snapshot = await getDocs(q);
 
-  for (const docSnap of snapshot.docs) {
-    const r = docSnap.data();
+  for (const d of snapshot.docs) {
+    const r = d.data();
     if (
       new Date(r.entrada) < new Date(salida) &&
       new Date(r.salida) > new Date(entrada)
@@ -93,28 +91,22 @@ async function hotelDisponible(hotelId, entrada, salida) {
   return true;
 }
 
-// ===============================
-// CARGAR HOTELES (USUARIO)
-// ===============================
+/* ===============================
+   CARGAR HOTELES
+================================ */
 async function cargarHoteles() {
   hotelesList.innerHTML = "";
   if (!validarFechas(fechaEntrada.value, fechaSalida.value)) return;
 
   const snapshot = await getDocs(collection(db, "hoteles"));
 
-  for (const docSnap of snapshot.docs) {
-    const h = docSnap.data();
-
-    const disponible = await hotelDisponible(
-      docSnap.id,
-      fechaEntrada.value,
-      fechaSalida.value
-    );
+  for (const d of snapshot.docs) {
+    const h = d.data();
+    const disponible = await hotelDisponible(d.id, fechaEntrada.value, fechaSalida.value);
     if (!disponible) continue;
 
     const card = document.createElement("div");
     card.className = "hotel-card";
-
     card.innerHTML = `
       <div class="content">
         <h3>${h.nombre}</h3>
@@ -124,26 +116,24 @@ async function cargarHoteles() {
       </div>
     `;
 
-    card.querySelector("button").addEventListener("click", () => {
+    card.querySelector("button").onclick = () => {
       if (!auth.currentUser) {
         alert("Debes iniciar sesión");
         return;
       }
 
       const noches = calcularNoches(fechaEntrada.value, fechaSalida.value);
-      const total = noches * h.precio;
-
       reservaActual = {
-        hotelId: docSnap.id,
+        hotelId: d.id,
         hotel: h.nombre,
         precio: h.precio,
         noches,
-        total,
+        total: noches * h.precio,
         entrada: fechaEntrada.value,
         salida: fechaSalida.value,
         userId: auth.currentUser.uid,
         estado: "pendiente",
-        createdAt: new Date(),
+        createdAt: new Date()
       };
 
       document.getElementById("reserva-hotel").textContent = h.nombre;
@@ -152,117 +142,114 @@ async function cargarHoteles() {
       document.getElementById("reserva-salida").textContent = fechaSalida.value;
 
       reservaModal.style.display = "flex";
-    });
+    };
 
     hotelesList.appendChild(card);
   }
 }
 
-// ===============================
-// CONFIRMAR RESERVA
-// ===============================
-confirmarBtn.addEventListener("click", async () => {
+/* ===============================
+   CONFIRMAR RESERVA
+================================ */
+confirmarBtn.onclick = async () => {
   if (!reservaActual) return;
   await addDoc(collection(db, "reservas"), reservaActual);
   reservaModal.style.display = "none";
-  alert("✅ Reserva guardada");
-});
+  alert("✅ Reserva creada, pendiente de pago");
+};
 
-// ===============================
-// LOGIN ADMIN
-// ===============================
-adminForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById("admin-email").value;
-  const password = document.getElementById("admin-password").value;
-
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-
-    if (cred.user.email !== ADMIN_EMAIL) {
-      loginError.style.display = "block";
-      return;
-    }
-
-    adminLoginSection.style.display = "none";
-    adminPanelSection.style.display = "block";
-    cargarHotelesAdmin();
-  } catch (err) {
-    loginError.style.display = "block";
-  }
-});
-
-// ===============================
-// ADMIN: CARGAR HOTELES
-// ===============================
-async function cargarHotelesAdmin() {
-  hotelSelect.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "hoteles"));
-
-  snapshot.forEach(docSnap => {
-    const h = docSnap.data();
-    const option = document.createElement("option");
-    option.value = docSnap.id;
-    option.textContent = `${h.nombre} ($${h.precio})`;
-    hotelSelect.appendChild(option);
-  });
-}
-
-// ===============================
-// ADMIN: ACTUALIZAR PRECIO
-// ===============================
-guardarPrecioBtn?.addEventListener("click", async () => {
-  const hotelId = hotelSelect.value;
-  const nuevoPrecio = Number(nuevoPrecioInput.value);
-
-  if (!hotelId || nuevoPrecio <= 0) {
-    alert("Precio inválido");
+/* ===============================
+   MIS RESERVAS
+================================ */
+async function cargarMisReservas() {
+  reservasList.innerHTML = "";
+  if (!auth.currentUser) {
+    reservasList.innerHTML = "<p>Inicia sesión</p>";
     return;
   }
 
-  await updateDoc(doc(db, "hoteles", hotelId), {
-    precio: nuevoPrecio
+  const q = query(collection(db, "reservas"), where("userId", "==", auth.currentUser.uid));
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(d => {
+    const r = d.data();
+    const card = document.createElement("div");
+    card.className = "hotel-card";
+    card.innerHTML = `
+      <div class="content">
+        <h3>${r.hotel}</h3>
+        <p>${r.entrada} → ${r.salida}</p>
+        <p>💰 $${r.total} (${r.estado})</p>
+        <button>Cancelar</button>
+      </div>
+    `;
+    card.querySelector("button").onclick = async () => {
+      await deleteDoc(doc(db, "reservas", d.id));
+      cargarMisReservas();
+    };
+    reservasList.appendChild(card);
   });
+}
 
-  alert("✅ Precio actualizado");
-  cargarHotelesAdmin();
-});
+/* ===============================
+   PAGOS
+================================ */
+async function cargarPagoPendiente() {
+  pagoMsg.textContent = "";
+  if (!auth.currentUser) return;
 
-// ===============================
-// TABS
-// ===============================
-tabs.forEach((tab, index) => {
-  tab.addEventListener("click", () => {
+  const q = query(
+    collection(db, "reservas"),
+    where("userId", "==", auth.currentUser.uid),
+    where("estado", "==", "pendiente")
+  );
+
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    reservaPendientePago = snapshot.docs[0];
+    pagoMsg.textContent = "Tienes una reserva pendiente de pago";
+  } else {
+    pagoMsg.textContent = "No hay pagos pendientes";
+  }
+}
+
+pagarBtn.onclick = async () => {
+  if (!reservaPendientePago) return;
+  await updateDoc(doc(db, "reservas", reservaPendientePago.id), {
+    estado: "pagado"
+  });
+  alert("💳 Pago simulado exitoso");
+  cargarPagoPendiente();
+};
+
+/* ===============================
+   TABS (SOLUCIÓN REAL)
+================================ */
+tabs.forEach(tab => {
+  tab.onclick = () => {
     tabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
 
-    searchSection.style.display = "none";
-    hotelesSection.style.display = "none";
-    reservasSection.style.display = "none";
-    pagosSection.style.display = "none";
-    adminLoginSection.style.display = "none";
-    adminPanelSection.style.display = "none";
+    ocultarTodo();
 
-    if (index === 0) {
-      searchSection.style.display = "block";
+    const target = tab.dataset.tab;
+    if (target === "reservar") {
+      reservarSection.style.display = "block";
       hotelesSection.style.display = "block";
     }
-
-    if (index === 1) {
+    if (target === "mis-reservas") {
       reservasSection.style.display = "block";
+      cargarMisReservas();
     }
-
-    if (index === 2) {
+    if (target === "pagos") {
       pagosSection.style.display = "block";
+      cargarPagoPendiente();
     }
-
-    if (index === 3) {
-      adminLoginSection.style.display = "block";
-    }
-  });
+  };
 });
 
-// ===============================
-searchBtn.addEventListener("click", cargarHoteles);
-closeReserva.addEventListener("click", () => reservaModal.style.display = "none");
+/* ===============================
+   EVENTOS
+================================ */
+searchBtn.onclick = cargarHoteles;
+closeReserva.onclick = () => reservaModal.style.display = "none";
